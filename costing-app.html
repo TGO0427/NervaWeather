@@ -260,15 +260,68 @@
             }
             
             /* Mobile Main Content */
+            .flex-1.flex.flex-col.overflow-hidden {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: visible !important;
+            }
+            
             main {
                 padding: 16px !important;
                 margin-top: 0;
+                flex: 1 !important;
+                overflow: visible !important;
+                height: auto !important;
+                min-height: calc(100vh - 80px) !important;
+            }
+            
+            /* Ensure pages are visible */
+            .page {
+                display: none;
+                width: 100%;
+                height: auto;
+                min-height: 300px;
+            }
+            .page.active {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            /* Force dashboard to be visible on initial load */
+            #dashboard-page {
+                display: block;
+            }
+            #dashboard-page.active {
+                display: block !important;
             }
             
             /* Mobile Grid Layouts */
             .grid {
                 grid-template-columns: 1fr !important;
                 gap: 16px !important;
+            }
+            
+            /* Mobile Dashboard Fix */
+            #saved-quotes-list, #cost-requests-list {
+                min-height: 100px !important;
+                background: white !important;
+                padding: 16px !important;
+                border-radius: 8px !important;
+                margin-bottom: 16px !important;
+            }
+            
+            #saved-quotes-list:empty::before {
+                content: "No saved quotes yet. Create your first quote in the Cost Generator!";
+                color: #6b7280;
+                font-style: italic;
+            }
+            
+            #cost-requests-list:empty::before {
+                content: "No pending requests. Submit a request to get started!";
+                color: #6b7280;
+                font-style: italic;
             }
             
             /* Mobile Cards */
