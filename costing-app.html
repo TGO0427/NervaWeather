@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synerore - Costing Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" xintegrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary-color: #10b981;
+            --secondary-dark: #059669;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+        }
+        
+        .sidebar-link { 
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .sidebar-link:hover { 
+            background-color: rgba(59, 130, 246, 0.1);
+            transform: translateX(4px);
+        }
+        .sidebar-link.active { 
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        /* Enhanced Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+            border: 1px solid var(--gray-200);
+        }
+        .card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+        
+        /* Enhanced Buttons */
+        .btn {
+            transition: all 0.2s ease;
+            font-weight: 600;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1e40af 100%);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, var(--secondary-dark) 0%, #047857 100%);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error-color) 0%, #dc2626 100%);
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+        
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--success-color);
+            z-index: 1000;
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            max-width: 400px;
+        }
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .toast.error {
+            border-left-color: var(--error-color);
+        }
+        .toast.warning {
+            border-left-color: var(--warning-color);
+        }
+        
+        /* Enhanced Form Elements */
+        .form-input {
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+        .form-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            transform: scale(1.01);
+        }
+        
+        /* Section Headers with Icons */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        /* Progress Indicators */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--gray-200);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            transition: width 0.3s ease;
+        }
+        
+        /* Enhanced Header */
+        .app-header {
+            background: linear-gradient(135deg, white 0%, var(--gray-50) 100%);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        /* Quote Cards */
+        .quote-card {
+            background: linear-gradient(135deg, #f8fafc 0%, white 100%);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .quote-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        }
+        
+        /* Pending Request Cards */
+        .request-card {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            /* Mobile Layout */
+            .flex.h-screen {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            /* Mobile Sidebar */
+            aside {
+                width: 100% !important;
+                position: fixed;
+                top: 0;
+                left: -100%;
+                height: 100vh;
+                z-index: 50;
+                transition: left 0.3s ease;
+            }
+            aside.mobile-open {
+                left: 0;
+            }
+            
+            /* Mobile Overlay */
+            .mobile-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+                display: none;
+            }
+            .mobile-overlay.show {
+                display: block;
+            }
+            
+            /* Mobile Header */
+            .app-header {
+                position: relative;
+                z-index: 40;
+            }
+            .app-header .flex {
+                padding: 12px 16px;
+            }
+            #page-title {
+                font-size: 1.25rem;
+            }
+            
+            /* Mobile Menu Button */
+            .mobile-menu-btn {
+                display: block;
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                color: var(--gray-800);
+                cursor: pointer;
+            }
+            
+            /* Mobile Main Content */
+            main {
+                padding: 16px !important;
+                margin-top: 0;
+            }
+            
+            /* Mobile Grid Layouts */
+            .grid {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+            
+            /* Mobile Cards */
+            .card, .quote-card, .request-card {
+                margin-bottom: 16px;
+                border-radius: 8px;
+            }
+            
+            /* Mobile Form Elements */
+            .form-input, select, textarea, input {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+                padding: 12px !important;
+            }
+            
+            /* Mobile Buttons */
+            .btn {
+                padding: 12px 16px !important;
+                font-size: 14px;
+                min-height: 44px; /* Touch target size */
+            }
+            
+            /* Mobile Quote/Request Cards */
+            .quote-card, .request-card {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 12px;
+            }
+            .quote-card .flex-1, .request-card .flex-1 {
+                margin-bottom: 12px;
+            }
+            .quote-card .flex.items-center, .request-card .flex.items-center {
+                justify-content: stretch;
+                gap: 8px;
+            }
+            .quote-card .btn, .request-card .btn {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            /* Mobile Typography */
+            h1, h2, h3 {
+                font-size: 1.1rem !important;
+                line-height: 1.4;
+            }
+            
+            /* Mobile Spacing */
+            .space-y-6 > * + * {
+                margin-top: 16px !important;
+            }
+            .space-y-4 > * + * {
+                margin-top: 12px !important;
+            }
+            .space-y-2 > * + * {
+                margin-top: 8px !important;
+            }
+            
+            /* Mobile Toast Notifications */
+            .toast {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                transform: translateY(-100px);
+            }
+            .toast.show {
+                transform: translateY(0);
+            }
+            
+            /* Mobile Cost Generator Layout */
+            .lg\\:col-span-2 {
+                grid-column: span 1 !important;
+            }
+            .lg\\:col-span-1 {
+                grid-column: span 1 !important;
+            }
+            
+            /* Mobile Sticky Elements */
+            .sticky {
+                position: relative !important;
+                top: auto !important;
+            }
+            
+            /* Mobile Hidden Elements */
+            .md\\:grid-cols-2 {
+                grid-template-columns: 1fr !important;
+            }
+            .md\\:grid-cols-3 {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        
+        /* Tablet Styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            aside {
+                width: 200px;
+            }
+            main {
+                padding: 24px;
+            }
+            .grid {
+                gap: 20px;
+            }
+        }
+        
+        /* Desktop Hidden Mobile Menu */
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen bg-gray-200">
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gray-800 text-white flex flex-col">
+            <div class="flex items-center justify-center gap-x-3 p-4 border-b border-gray-700">
+                <img src="synercore-logo.png" alt="Synercore Logo" class="h-10 w-10 object-contain">
+                <span class="text-xl font-bold">Synercore</span>
+            </div>
+            <nav id="sidebar-nav" class="flex-1 px-2 py-4 space-y-2">
+                <a href="#dashboard" data-page="dashboard-page" class="sidebar-link flex items-center px-4 py-2 rounded-md hover:bg-gray-700">
+                    <span class="text-lg">📊</span> Dashboard
+                </a>
+                <a href="#generator" data-page="cost-generator-page" class="sidebar-link flex items-center px-4 py-2 rounded-md hover:bg-gray-700">
+                    <span class="text-lg">💰</span> Cost Generator
+                </a>
+                <a href="#request" data-page="cost-request-page" class="sidebar-link flex items-center px-4 py-2 rounded-md hover:bg-gray-700">
+                    <span class="text-lg">📝</span> Cost Request
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="app-header shadow-md">
+                 <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center gap-x-3">
+                        <button class="mobile-menu-btn" style="display: none;" onclick="toggleMobileMenu()">☰</button>
+                        <h1 id="page-title" class="text-2xl font-bold text-gray-800">📊 Dashboard</h1>
+                    </div>
+                    <div id="header-buttons" class="flex items-center gap-x-2">
+                        <!-- Buttons will be dynamically added here -->
+                    </div>
+                </div>
+            </header>
+            
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Saved Quotes</h3>
+                            <div id="saved-quotes-list" class="space-y-3"></div>
+                        </div>
+                        <div>
+                             <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Pending Quotes</h3>
+                             <div id="cost-requests-list" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Generator Page -->
+                <div id="cost-generator-page" class="page">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 space-y-6">
+                            <div id="shipment-details" class="bg-white p-4 rounded-lg shadow-sm"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Shipment Details</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Exchange Rates (to ZAR)</h3><div id="exchange-rates" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div></div>
+                            <div id="cost-sections"></div>
+                        </div>
+                        <div class="lg:col-span-1 space-y-6">
+                            <div class="bg-white p-4 rounded-lg shadow-sm sticky top-6"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Costing Summary</h3><div id="summary-output" class="space-y-2 text-sm"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm" style="position:sticky; top: 24rem;"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Landed Cost Calculator</h3><div id="landed-cost-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="landed-cost-output" class="space-y-2 text-sm"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Request Page -->
+                <div id="cost-request-page" class="page">
+                    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Submit a Costing Request</h2>
+                        <form id="cost-request-form" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">Your Name</label><input type="text" id="req-name" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Your Email</label><input type="email" id="req-email" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700">Supplier Name</label><select id="req-client" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"><option value="">Select Supplier</option><option value="Qida Chemical Co. Ltd">Qida Chemical Co. Ltd</option><option value="AROMSA BESIN AROMA VE KATKI MADDELERI SAN. VE TIC. A.S.">AROMSA BESIN AROMA VE KATKI MADDELERI SAN. VE TIC. A.S.</option><option value="SACCO S.R.L">SACCO S.R.L</option><option value="Futura Ingredients">Futura Ingredients</option><option value="MARCEL CARRAGEENAN">MARCEL CARRAGEENAN</option><option value="AB Mauri">AB Mauri</option><option value="KMC">KMC</option><option value="Ornua Co-operative Limeted">Ornua Co-operative Limeted</option><option value="Halavet Gida Sanayi Ve Ticaret A.S">Halavet Gida Sanayi Ve Ticaret A.S</option><option value="Delta Iris">Delta Iris</option><option value="Tristar Global">Tristar Global</option></select></div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">Origin</label><input type="text" id="req-origin" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Destination</label><input type="text" id="req-destination" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">Total Weight (kg)</label><input type="number" step="0.01" id="req-weight" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Incoterms</label><select id="req-incoterm" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"><option value="">Select Incoterm</option><option value="EXW">EXW</option><option value="FOB">FOB</option><option value="CFR">CFR</option><option value="CIF">CIF</option><option value="DAP">DAP</option><option value="DDP">DDP</option></select></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">Total Cost</label><input type="number" step="0.01" id="req-cost" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Currency</label><select id="req-currency" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"><option value="">Select Currency</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="ZAR">ZAR</option></select></div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700">Commodity Description</label><textarea id="req-commodity" rows="3" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></textarea></div>
+                            <div><label class="block text-sm font-medium text-gray-700">Additional Notes or Special Instructions</label><textarea id="req-notes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></textarea></div>
+                            <div class="text-right"><button type="submit" class="btn btn-primary text-white font-bold py-3 px-6 rounded-lg">📤 Submit Request</button></div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase configuration
+        const __firebase_config = JSON.stringify({
+            apiKey: "AIzaSyCYCinps1BCJVJuT3ZSZHXYRQ6RjCmoQWk",
+            authDomain: "costing-app-4b351.firebaseapp.com",
+            projectId: "costing-app-4b351",
+            storageBucket: "costing-app-4b351.firebasestorage.app",
+            messagingSenderId: "868255106195",
+            appId: "1:868255106195:web:022741badc310dd4f43966"
+        });
+        const __app_id = "costing-app-4b351";
+    </script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, query, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- GLOBAL STATE & CONFIG ---
+        const state = { 
+            shipmentDetails: { 
+                supplierName: { label: 'Supplier Name', value: 'Qida Chemical Co. Ltd', type: 'select', options: ['Qida Chemical Co. Ltd', 'AROMSA BESIN AROMA VE KATKI MADDELERI SAN. VE TIC. A.S.', 'SACCO S.R.L', 'Futura Ingredients', 'MARCEL CARRAGEENAN', 'AB Mauri', 'KMC', 'Ornua Co-operative Limeted', 'Halavet Gida Sanayi Ve Ticaret A.S', 'Delta Iris', 'Tristar Global'] },
+                pol: { label: 'Port of Loading (POL)', value: 'Shanghai', type: 'select', options: ['Shanghai', 'Ningbo', 'Qingdao', 'Singapore', 'Rotterdam', 'Hamburg', 'Los Angeles', 'Durban', 'Cape Town', 'Gqeberha', 'Jakarta', 'Port Klang', 'Istanbul', 'Istanbul,Ambarlı', 'Nhava Sheva', 'Dublin', 'Auckland'] }, 
+                pod: { label: 'Port of Discharge (POD)', value: 'Durban', type: 'select', options: ['Durban', 'Cape Town', 'Gqeberha', 'Shanghai', 'Ningbo', 'Qingdao', 'Singapore', 'Rotterdam', 'Hamburg', 'Los Angeles', 'Jakarta', 'Port Klang', 'Istanbul', 'Istanbul,Ambarlı', 'Nhava Sheva', 'Dublin', 'Auckland'] }, 
+                shippingLine: { label: 'Shipping Line', value: 'Maersk', type: 'select', options: ['Maersk', 'MSC', 'CMA CGM', 'COSCO', 'Hapag-Lloyd', 'PIL', 'ONE', 'MAERSK'] }, 
+                containerSize: { label: 'Container Size', value: "40' HC", type: 'select', options: ["20' GP", "40' GP", "40' HC", "20' OT", "40' OT", "20' FR", "40' FR"] }, 
+                commodity: { label: 'Commodity', value: 'General Goods', type: 'text' }, 
+                incoterm: { label: 'Incoterm', value: 'FOB', type: 'select', options: ['EXW', 'FOB', 'CFR', 'CIF', 'DAP', 'DDP'] } 
+            }, 
+            exchangeRates: { usd: { label: 'USD to ZAR', value: '18.50' }, eur: { label: 'EUR to ZAR', value: '20.20' }, gbp: { label: 'GBP to ZAR', value: '23.50' } }, 
+            costs: { 
+                freight: { title: 'Freight costs', currencyOptions: ['USD', 'EUR', 'GBP'], items: { seaFreight: { label: 'Sea Freight', value: '2500', currency: 'usd' }, peakSeasonSurcharge: { label: 'Peak Season Surcharge', value: '0', currency: 'usd' }, bunkerSurcharge: { label: 'Bunker Surcharge', value: '300', currency: 'usd' }, adminFee: { label: 'Admin Fee', value: '50', currency: 'usd' } } }, 
+                origin: { title: 'Origin charges', currencyOptions: ['USD', 'EUR', 'GBP'], items: { thc: { label: 'THC', value: '150', currency: 'usd' }, documentation: { label: 'Documentation', value: '75', currency: 'usd' }, cartage: { label: 'Cartage', value: '0', currency: 'usd' }, exportCustoms: { label: 'Export Customs', value: '100', currency: 'usd' } } }, 
+                destinationCharges: { title: 'Destination charges', currencyOptions: ['ZAR'], items: { shippingLineCharges: { label: 'Shipping line charges', value: '0', currency: 'zar' }, cargoDues20ft: { label: 'Cargo dues 20ft', value: '0', currency: 'zar' }, cargoDues40ft: { label: 'Cargo dues 40ft', value: '0', currency: 'zar' }, ctoFee: { label: 'CTO fee', value: '0', currency: 'zar' } } }, 
+                clearing: { title: 'Forwarding & clearing', currencyOptions: ['ZAR'], items: { agencyFee: { label: 'Agency Fee', value: '1850', currency: 'zar' }, customsClearance: { label: 'Customs Clearance', value: '950', currency: 'zar' }, documentation: { label: 'Documentation', value: '450', currency: 'zar' }, portHealthInspection: { label: 'Port health inspection', value: '0', currency: 'zar' }, daffInspection: { label: 'DAFF inspection', value: '0', currency: 'zar' }, stateVetCancellation: { label: 'State vet cancellation fee', value: '0', currency: 'zar' }, nbTurnIn: { label: 'NB turn in', value: '0', currency: 'zar' }, vesselAc: { label: 'Vessel A&C', value: '0', currency: 'zar' } } },
+                transport: { title: 'Transport and warehousing', currencyOptions: ['ZAR'], items: { localCartageCptUnder20: { label: 'Local cartage: CPT to Klapmuts < 20 ton', value: '0', currency: 'zar' }, localCartageCpt21_28: { label: 'Local cartage: CPT to Klapmuts 21-28 ton', value: '0', currency: 'zar' }, transportDbnPta20ft: { label: 'Transport: DBN port to Pretoria - 20ft < 20 tons, direct', value: '0', currency: 'zar' }, transportDbnWhs: { label: 'Transport: DBN port to WHS', value: '0', currency: 'zar' }, unpackReload: { label: 'Unpack / Reload', value: '0', currency: 'zar' }, storage: { label: 'Storage (3 days free)', value: '0', currency: 'zar' }, outlyingSurcharge: { label: 'Outlying container depot surcharge', value: '0', currency: 'zar' }, localCartageDbnPtaA: { label: 'Local cartage: DBN WHS to Pretoria - Option A', value: '0', currency: 'zar' }, localCartageDbnPtaB: { label: 'Local cartage: DBN WHS to Pretoria - Option B', value: '0', currency: 'zar' }, localCartageDbn6m: { label: 'Local cartage: DBN WHS to Pretoria - 6m deckspace', value: '0', currency: 'zar' }, localCartageDbn12m: { label: 'Local cartage: DBN WHS to Pretoria - 12m deckspace', value: '0', currency: 'zar' }, transportPePta: { label: 'Transport: PE/Coega port to Pretoria', value: '0', currency: 'zar' } } } 
+            }, 
+            landedCost: { commercialInvoiceValue: { label: 'Commercial Invoice Value (USD)', value: '15000' }, dutyRate: { label: 'Rate of Duty (%)', value: '5' }, totalKg: { label: 'Total Kg', value: '1000' } } 
+        };
+        const VAT_RATE = 0.15;
+
+        // --- UTILITY FUNCTIONS ---
+        const formatCurrency = (value, currency = 'ZAR') => new Intl.NumberFormat('en-ZA', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(parseFloat(value) || 0);
+
+        // --- NOTIFICATION SYSTEM ---
+        const showToast = (message, type = 'success') => {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="text-lg">
+                        ${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'}
+                    </span>
+                    <div>
+                        <p class="font-semibold text-gray-800">${message}</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        };
+
+        // --- MOBILE MENU FUNCTIONALITY ---
+        const toggleMobileMenu = () => {
+            const sidebar = document.querySelector('aside');
+            const overlay = document.querySelector('.mobile-overlay');
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('show');
+            
+            // Prevent body scroll when menu is open
+            if (sidebar.classList.contains('mobile-open')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        };
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const sidebar = document.querySelector('aside');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            if (window.innerWidth <= 768 && 
+                sidebar.classList.contains('mobile-open') && 
+                !sidebar.contains(e.target) && 
+                !menuBtn.contains(e.target)) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+
+        // Close mobile menu when selecting a navigation item
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        const sidebar = document.querySelector('aside');
+                        const overlay = document.querySelector('.mobile-overlay');
+                        sidebar.classList.remove('mobile-open');
+                        overlay.classList.remove('show');
+                        document.body.style.overflow = '';
+                    }
+                });
+            });
+        });
+
+        // --- CORE APP LOGIC ---
+        const App = {
+            db: null,
+            userId: null,
+            quotesCollection: null,
+            requestsCollection: null,
+
+            elements: {
+                pageTitle: document.getElementById('page-title'),
+                headerButtons: document.getElementById('header-buttons'),
+                pages: document.querySelectorAll('.page'),
+                sidebarNav: document.getElementById('sidebar-nav'),
+            },
+
+            async init() {
+                await this.initFirebase(); 
+                this.generateInputs();
+                this.updateDisplay();
+                this.attachEventListeners();
+                this.handleInitialPageLoad();
+                if (this.db) {
+                    this.listenForQuotes();
+                    this.listenForCostRequests();
+                } else {
+                    // Fallback to local storage when Firebase is not available
+                    this.loadLocalQuotes();
+                }
+            },
+
+            async initFirebase() {
+                try {
+                    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                    if (!firebaseConfig.apiKey) {
+                        throw new Error("Firebase config is missing or invalid.");
+                    }
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    const app = initializeApp(firebaseConfig);
+                    this.db = getFirestore(app);
+                    const auth = getAuth(app);
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); }
+                    this.userId = auth.currentUser.uid;
+                    this.quotesCollection = collection(this.db, "quotes");
+                    this.requestsCollection = collection(this.db, "cost_requests");
+                } catch(e) {
+                    console.error("Firebase initialization failed:", e);
+                }
+            },
+
+            switchPage(pageId) {
+                if (!pageId) return;
+                
+                this.elements.headerButtons.innerHTML = ''; 
+                if (pageId === 'cost-generator-page') {
+                    this.elements.headerButtons.innerHTML = `
+                        <button id="save-quote-button" class="btn btn-success text-white font-bold py-2 px-4 rounded-lg">
+                            💾 Save Quote
+                        </button>
+                        <button id="pdf-button" class="btn btn-primary text-white font-bold py-2 px-4 rounded-lg">
+                            📄 Generate PDF
+                        </button>`;
+                }
+                
+                this.elements.pages.forEach(p => p.classList.toggle('active', p.id === pageId));
+                document.querySelectorAll('.sidebar-link').forEach(link => link.classList.toggle('active', link.dataset.page === pageId));
+                
+                const pageIcons = {
+                    'dashboard-page': '📊 Dashboard',
+                    'cost-generator-page': '💰 Cost Generator', 
+                    'cost-request-page': '📝 Cost Request'
+                };
+                
+                this.elements.pageTitle.textContent = pageIcons[pageId] || 'Dashboard';
+            },
+            
+            attachEventListeners() {
+                this.elements.sidebarNav.addEventListener('click', (e) => {
+                    if (e.target && e.target.matches('a.sidebar-link')) {
+                        e.preventDefault();
+                        const pageId = e.target.dataset.page;
+                        if(pageId) {
+                           window.location.hash = e.target.hash;
+                           this.switchPage(pageId);
+                        }
+                    }
+                });
+                
+                this.elements.headerButtons.addEventListener('click', (e) => {
+                    if (e.target.id === 'save-quote-button') this.saveQuote();
+                    if (e.target.id === 'pdf-button') this.generatePdf();
+                });
+                
+                document.getElementById('cost-generator-page').addEventListener('input', () => this.updateDisplay());
+                document.getElementById('cost-request-form').addEventListener('submit', (e) => this.submitCostRequest(e));
+            },
+            
+            handleInitialPageLoad() {
+                const initialHash = window.location.hash.substring(1);
+                const validPages = ['dashboard', 'generator', 'request'];
+                const initialPage = validPages.includes(initialHash) ? initialHash : 'dashboard';
+                this.switchPage(`${initialPage}-page`);
+            },
+            
+            getCurrentData(fullState = false) { const currentValues = { details: {}, exchangeRates: {}, costs: {}, landedCost: {} }; for (const key in state.shipmentDetails) currentValues.details[key] = document.getElementById(`sd-${key}`).value; for (const key in state.exchangeRates) currentValues.exchangeRates[key] = document.getElementById(`er-${key}`).value; for (const sectionKey in state.costs) { currentValues.costs[sectionKey] = {}; for (const itemKey in state.costs[sectionKey].items) { const valueEl = document.getElementById(`cost-${sectionKey}-${itemKey}-value`); const currencyEl = document.getElementById(`cost-${sectionKey}-${itemKey}-currency`); if(valueEl) { currentValues.costs[sectionKey][itemKey] = { value: valueEl.value, currency: currencyEl?.value }; } } } for (const key in state.landedCost) { const el = document.getElementById(`lc-${key}`); if (el) currentValues.landedCost[key] = el.value; } if (fullState) { const now = new Date(); currentValues.quoteNumber = `SYN-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${now.getTime().toString().slice(-4)}`; currentValues.createdAt = now.toISOString(); currentValues.createdBy = this.userId; } return currentValues; },
+            async saveQuote() {
+                if (!this.quotesCollection) {
+                    // Fallback to localStorage when Firebase is not available
+                    return this.saveQuoteLocal();
+                }
+                const button = document.getElementById('save-quote-button'); 
+                if (!button) return; 
+                button.disabled = true; 
+                button.innerHTML = '<span class="loading"></span> Saving...'; 
+                try { 
+                    await addDoc(this.quotesCollection, this.getCurrentData(true)); 
+                    showToast('Quote saved successfully! 🎉', 'success'); 
+                } catch (error) { 
+                    console.error("Error saving quote: ", error); 
+                    showToast("Failed to save quote. Please try again.", 'error');
+                } finally { 
+                    if(button) { button.disabled = false; button.innerHTML = '💾 Save Quote'; }
+                } 
+            },
+            async loadQuote(quoteId) {
+                if (!this.db) {
+                    alert('Database not available');
+                    return;
+                }
+                
+                try {
+                    console.log('Loading quote with ID:', quoteId);
+                    const quoteDoc = await getDoc(doc(this.db, "quotes", quoteId));
+                    
+                    if (quoteDoc.exists()) {
+                        const data = quoteDoc.data();
+                        console.log('Quote data loaded:', data);
+                        
+                        // Load shipment details
+                        if (data.details) {
+                            for (const key in data.details) {
+                                const el = document.getElementById(`sd-${key}`);
+                                if (el) {
+                                    el.value = data.details[key];
+                                    console.log(`Set ${key} to ${data.details[key]}`);
+                                }
+                            }
+                        }
+                        
+                        // Load exchange rates
+                        if (data.exchangeRates) {
+                            for (const key in data.exchangeRates) {
+                                const el = document.getElementById(`er-${key}`);
+                                if (el) {
+                                    el.value = data.exchangeRates[key];
+                                }
+                            }
+                        }
+                        
+                        // Load costs
+                        if (data.costs) {
+                            for (const sectionKey in state.costs) {
+                                if (data.costs[sectionKey]) {
+                                    for (const itemKey in state.costs[sectionKey].items) {
+                                        if (data.costs[sectionKey][itemKey]) {
+                                            const valueEl = document.getElementById(`cost-${sectionKey}-${itemKey}-value`);
+                                            const currencyEl = document.getElementById(`cost-${sectionKey}-${itemKey}-currency`);
+                                            
+                                            if (valueEl) {
+                                                valueEl.value = data.costs[sectionKey][itemKey].value;
+                                            }
+                                            if (currencyEl) {
+                                                currencyEl.value = data.costs[sectionKey][itemKey].currency;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Load landed cost
+                        if (data.landedCost) {
+                            for (const key in data.landedCost) {
+                                const el = document.getElementById(`lc-${key}`);
+                                if (el) {
+                                    el.value = data.landedCost[key];
+                                }
+                            }
+                        }
+                        
+                        // Switch to cost generator page and update display
+                        this.switchPage('cost-generator-page');
+                        this.updateDisplay();
+                        showToast('Quote loaded successfully! ✨', 'success');
+                        
+                    } else {
+                        alert("Quote not found.");
+                    }
+                } catch (error) {
+                    console.error("Error loading quote: ", error);
+                    alert("Error loading quote: " + error.message);
+                }
+            },
+            
+            saveQuoteLocal() {
+                const button = document.getElementById('save-quote-button');
+                if (!button) return;
+                button.disabled = true;
+                button.textContent = 'Saving...';
+                
+                try {
+                    const quoteData = this.getCurrentData(true);
+                    const quotes = JSON.parse(localStorage.getItem('synerore_quotes') || '[]');
+                    quoteData.id = Date.now().toString();
+                    quotes.push(quoteData);
+                    localStorage.setItem('synerore_quotes', JSON.stringify(quotes));
+                    showToast('Quote saved locally! 📱 Note: Only visible on this browser.', 'warning');
+                    this.loadLocalQuotes();
+                } catch (error) {
+                    console.error('Error saving quote locally:', error);
+                    alert('Failed to save quote locally.');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Save Quote';
+                }
+            },
+            
+            loadLocalQuotes() {
+                const listContainer = document.getElementById('saved-quotes-list');
+                try {
+                    const quotes = JSON.parse(localStorage.getItem('synerore_quotes') || '[]');
+                    if (quotes.length === 0) {
+                        listContainer.innerHTML = '<p class="text-gray-500">No quotes saved yet.</p>';
+                        return;
+                    }
+                    
+                    quotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    listContainer.innerHTML = quotes.map(quote => 
+                        `<div class="quote-card flex items-center justify-between p-4">
+                            <div class="flex-1">
+                                <p class="font-bold text-gray-800">📦 ${quote.details.supplierName || 'No Supplier'}</p>
+                                <p class="text-sm text-gray-500">Quote #${quote.quoteNumber} • ${new Date(quote.createdAt).toLocaleDateString('en-GB')} <span class="text-orange-500 font-medium">(Local)</span></p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="App.loadLocalQuote('${quote.id}')" class="btn btn-primary text-white font-semibold py-2 px-4 rounded-lg">
+                                    📂 Load
+                                </button>
+                                <button onclick="App.deleteLocalQuote('${quote.id}')" class="btn btn-danger text-white font-semibold py-2 px-3 rounded-lg" title="Delete Local Quote">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>`
+                    ).join('');
+                } catch (error) {
+                    console.error('Error loading local quotes:', error);
+                    listContainer.innerHTML = '<p class="text-red-500">Error loading local quotes.</p>';
+                }
+            },
+            
+            loadLocalQuote(quoteId) {
+                try {
+                    const quotes = JSON.parse(localStorage.getItem('synerore_quotes') || '[]');
+                    const quote = quotes.find(q => q.id === quoteId);
+                    if (!quote) {
+                        alert('Quote not found.');
+                        return;
+                    }
+                    
+                    for (const key in quote.details) {
+                        const el = document.getElementById(`sd-${key}`);
+                        if (el) el.value = quote.details[key];
+                    }
+                    for (const key in quote.exchangeRates) {
+                        const el = document.getElementById(`er-${key}`);
+                        if (el) el.value = quote.exchangeRates[key];
+                    }
+                    for (const sectionKey in state.costs) {
+                        if (quote.costs[sectionKey]) {
+                            for (const itemKey in state.costs[sectionKey].items) {
+                                if (quote.costs[sectionKey][itemKey]) {
+                                    const valueEl = document.getElementById(`cost-${sectionKey}-${itemKey}-value`);
+                                    const currencyEl = document.getElementById(`cost-${sectionKey}-${itemKey}-currency`);
+                                    if (valueEl) valueEl.value = quote.costs[sectionKey][itemKey].value;
+                                    if (currencyEl) currencyEl.value = quote.costs[sectionKey][itemKey].currency;
+                                }
+                            }
+                        }
+                    }
+                    for (const key in quote.landedCost) {
+                        const el = document.getElementById(`lc-${key}`);
+                        if (el) el.value = quote.landedCost[key];
+                    }
+                    
+                    this.updateDisplay();
+                    this.switchPage('cost-generator-page');
+                    alert('Quote loaded successfully!');
+                } catch (error) {
+                    console.error('Error loading local quote:', error);
+                    alert('Error loading quote.');
+                }
+            },
+            generatePdf() { const { details, totals, landed } = this.calculateAll(); const now = new Date(); const quoteNumber = `SYN-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${now.getTime().toString().slice(-4)}`; const todayDate = now.toLocaleDateString('en-GB'); const pdfHtml = ` <div style="font-family: Arial, sans-serif; color: #333; margin: 25px;"> <table style="width: 100%; border-bottom: 2px solid #6366f1;"> <tr> <td style="width: 50%;"><img src="synercore-logo.png" alt="Synerore Logo" style="width: 150px;"></td> <td style="width: 50%; text-align: right;"> <h1 style="font-size: 28px; color: #6366f1; margin: 0;">Cost Estimate</h1> <p style="margin: 2px 0;"><b>Quote #:</b> ${quoteNumber}</p> <p style="margin: 2px 0;"><b>Date:</b> ${todayDate}</p> </td> </tr> </table> <table style="width: 100%; margin-top: 25px;"> <tr> <td style="vertical-align: top; width: 50%;"><h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px;">Prepared For:</h2><p style="margin: 2px 0;"><strong>${details.supplierName}</strong></p></td> <td style="vertical-align: top; width: 50%;"><h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px;">Shipment Details:</h2><p style="margin: 2px 0;"><strong>Origin:</strong> ${details.pol}</p><p style="margin: 2px 0;"><strong>Destination:</strong> ${details.pod}</p><p style="margin: 2px 0;"><strong>Container:</strong> ${details.containerSize}</p><p style="margin: 2px 0;"><strong>Commodity:</strong> ${details.commodity}</p></td> </tr> </table> <h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin: 25px 0 10px 0;">Costing Summary (in ZAR)</h2> <table style="width: 100%; border-collapse: collapse;"> <tr style="background-color: #f3f4f6;"><th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Description</th><th style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd;">Amount</th></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Freight Costs</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalFreight)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Origin Charges</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalOrigin)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Destination Charges</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalDestinationCharges)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Forwarding & Clearing</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalClearing)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Transport & Warehousing</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalTransport)}</td></tr> <tr style="font-weight: bold;"><td style="padding: 8px; border-top: 2px solid #333; border-bottom: 1px solid #eee;">Sub-Total (excl. VAT)</td><td style="padding: 8px; text-align: right; border-top: 2px solid #333; border-bottom: 1px solid #eee;">${formatCurrency(totals.preVatTotal)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">VAT on Services (15%)</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.vatOnServices)}</td></tr> <tr style="background-color: #eef2ff; font-weight: bold; font-size: 18px;"><td style="padding: 10px;">Grand Total</td><td style="padding: 10px; text-align: right;">${formatCurrency(totals.grandTotal)}</td></tr> </table> <h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin: 25px 0 10px 0;">Landed Cost Breakdown</h2> <table style="width: 100%; border-collapse: collapse;"> <tr style="background-color: #f3f4f6;"><th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Description</th><th style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd;">Amount</th></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Commercial Value (ZAR)</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(landed.commercialValueZAR)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Customs Duty</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(landed.dutyAmount)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">VAT on Goods</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(landed.vatOnGoods)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Total Clearing & Forwarding Costs</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(landed.totalClearingCosts)}</td></tr> <tr style="font-weight: bold; font-size: 16px;"><td style="padding: 8px; border-top: 2px solid #333; border-bottom: 1px solid #eee;">Total Landed Cost</td><td style="padding: 8px; text-align: right; border-top: 2px solid #333; border-bottom: 1px solid #eee;">${formatCurrency(landed.totalLandedCost)}</td></tr> <tr style="background-color: #dcfce7; font-weight: bold; font-size: 18px;"><td style="padding: 10px;">Cost per Kg</td><td style="padding: 10px; text-align: right;">${formatCurrency(landed.costPerKg)}</td></tr> </table> <div style="margin-top: 40px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 12px; color: #777;"><p><strong>Terms & Conditions:</strong></p><p>This is an estimate only and is subject to change based on final weights, dimensions, and applicable rates at the time of shipment. All business is conducted in accordance with our standard trading terms and conditions, available on request.</p><p style="margin-top: 10px;">Synercore (Pty) Ltd</p></div> </div>`; const options = { margin: 0.5, filename: `Synercore-Costing-${details.supplierName.replace(/ /g, '_')}-${quoteNumber}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }; html2pdf().from(pdfHtml).set(options).save(); },
+            calculateAll() {
+                const currentValues = this.getCurrentData();
+                const { details } = currentValues;
+                const zarRates = { ...Object.fromEntries(Object.entries(currentValues.exchangeRates).map(([k,v]) => [k, parseFloat(v)])), zar: 1 };
+                const calculateSectionTotal = (section) => Object.values(section).reduce((acc, item) => acc + (parseFloat(item.value || 0) * (zarRates[item.currency] || 0)), 0);
+                
+                const totals = { 
+                    subtotalFreight: calculateSectionTotal(currentValues.costs.freight), 
+                    subtotalOrigin: calculateSectionTotal(currentValues.costs.origin), 
+                    subtotalDestinationCharges: calculateSectionTotal(currentValues.costs.destinationCharges), 
+                    subtotalClearing: calculateSectionTotal(currentValues.costs.clearing),
+                    subtotalTransport: calculateSectionTotal(currentValues.costs.transport),
+                };
+                                
+                totals.preVatTotal = totals.subtotalFreight + totals.subtotalOrigin + totals.subtotalDestinationCharges + totals.subtotalClearing + totals.subtotalTransport;
+                totals.vatOnServices = (totals.subtotalDestinationCharges + totals.subtotalClearing + totals.subtotalTransport) * VAT_RATE;
+                totals.grandTotal = totals.preVatTotal + totals.vatOnServices;
+                
+                const landed = {};
+                landed.commercialValueZAR = parseFloat(currentValues.landedCost.commercialInvoiceValue) * zarRates.usd;
+                const dutyBaseValue = landed.commercialValueZAR * 1.1;
+                landed.dutyAmount = dutyBaseValue * (parseFloat(currentValues.landedCost.dutyRate) / 100);
+                const vatBaseValue = dutyBaseValue + landed.dutyAmount;
+                landed.vatOnGoods = vatBaseValue * VAT_RATE;
+                landed.totalClearingCosts = totals.subtotalDestinationCharges + totals.subtotalClearing + totals.subtotalTransport + totals.vatOnServices;
+                landed.totalLandedCost = landed.commercialValueZAR + landed.dutyAmount + landed.vatOnGoods + landed.totalClearingCosts;
+                const totalKg = parseFloat(currentValues.landedCost.totalKg) || 1;
+                landed.costPerKg = landed.totalLandedCost / totalKg;
+                return { details, totals, landed };
+            },
+            updateDisplay() { 
+                const { totals, landed } = this.calculateAll(); 
+                document.getElementById('summary-output').innerHTML = ` <div class="flex justify-between"><span class="text-gray-600">Freight Costs:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalFreight)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Origin Charges:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalOrigin)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Destination Charges:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalDestinationCharges)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Forwarding & Clearing:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalClearing)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Transport & Warehousing:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalTransport)}</span></div> <div class="border-t my-2"></div> <div class="flex justify-between text-base"><span class="font-semibold text-gray-700">Sub-Total (excl. VAT):</span> <span class="font-bold text-gray-900">${formatCurrency(totals.preVatTotal)}</span></div> <div class="flex justify-between"><span class="text-gray-600">VAT on Services (15%):</span> <span class="font-medium text-gray-800">${formatCurrency(totals.vatOnServices)}</span></div> <div class="border-t my-2 border-indigo-200"></div> <div class="flex justify-between text-xl p-2 bg-indigo-50 rounded-md"><span class="font-bold text-indigo-800">Grand Total:</span> <span class="font-extrabold text-indigo-900">${formatCurrency(totals.grandTotal)}</span></div> `; 
+                document.getElementById('landed-cost-output').innerHTML = ` <div class="flex justify-between"><span class="text-gray-600">Commercial Value (ZAR):</span> <span class="font-medium text-gray-800">${formatCurrency(landed.commercialValueZAR)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Customs Duty:</span> <span class="font-medium text-gray-800">${formatCurrency(landed.dutyAmount)}</span></div> <div class="flex justify-between"><span class="text-gray-600">VAT on Goods:</span> <span class="font-medium text-gray-800">${formatCurrency(landed.vatOnGoods)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Total Clearing Costs:</span> <span class="font-medium text-gray-800">${formatCurrency(landed.totalClearingCosts)}</span></div> <div class="border-t my-2"></div> <div class="flex justify-between text-base"><span class="font-semibold text-gray-700">Total Landed Cost:</span> <span class="font-bold text-gray-900">${formatCurrency(landed.totalLandedCost)}</span></div> <div class="border-t my-2 border-green-200"></div> <div class="flex justify-between text-xl p-2 bg-green-50 rounded-md"><span class="font-bold text-green-800">Cost per Kg:</span> <span class="font-extrabold text-green-900">${formatCurrency(landed.costPerKg)}</span></div> `; 
+            },
+            generateInputs() { 
+                document.querySelector('#shipment-details .grid').innerHTML = Object.entries(state.shipmentDetails).map(([key, item]) => { let fieldHtml = `<label class="block text-sm font-medium text-gray-600 mb-1">${item.label}</label>`; if (item.type === 'select') { fieldHtml += `<select id="sd-${key}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> ${item.options.map(opt => `<option value="${opt}" ${opt === item.value ? 'selected' : ''}>${opt}</option>`).join('')} </select>`; } else { fieldHtml += `<input type="text" id="sd-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800">`; } return `<div>${fieldHtml}</div>`; }).join(''); 
+                document.getElementById('exchange-rates').innerHTML = Object.entries(state.exchangeRates).map(([key, item]) => ` <div> <label class="block text-sm font-medium text-gray-600 mb-1">${item.label}</label> <input type="number" step="0.01" id="er-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> </div>`).join(''); 
+                document.getElementById('cost-sections').innerHTML = Object.entries(state.costs).map(([sectionKey, section]) => { const fieldsHtml = Object.entries(section.items).map(([itemKey, item]) => { const isPercent = item.currency === 'percent'; return ` <div> <label class="block text-sm font-medium text-gray-600 mb-1">${item.label}</label> <div class="flex items-center"> <input type="number" step="0.01" id="cost-${sectionKey}-${itemKey}-value" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" placeholder="0.00"> ${isPercent ? `<span class="inline-flex items-center px-3 text-gray-600 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">%</span>` : `<select id="cost-${sectionKey}-${itemKey}-currency" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md focus:outline-none"> ${section.currencyOptions.map(c => `<option value="${c.toLowerCase()}" ${c.toLowerCase() === item.currency ? 'selected' : ''}>${c}</option>`).join('')} </select>`} </div> </div>`; }).join(''); return `<div class="bg-white p-4 rounded-lg shadow-sm mb-6"> <h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">${section.title}</h3> <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${fieldsHtml}</div> </div>`; }).join(''); 
+                document.getElementById('landed-cost-inputs').innerHTML = Object.entries(state.landedCost).map(([key, item]) => ` <div> <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label> <input type="number" step="0.01" id="lc-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> </div>`).join(''); 
+            },
+            listenForQuotes() { 
+                if (!this.quotesCollection) return; 
+                const listContainer = document.getElementById('saved-quotes-list'); 
+                onSnapshot(query(this.quotesCollection), (snapshot) => { 
+                    if (snapshot.empty) { 
+                        listContainer.innerHTML = '<p class="text-gray-500">No quotes saved yet.</p>'; 
+                        return; 
+                    } 
+                    const quotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); 
+                    listContainer.innerHTML = quotes.map(quote => 
+                        `<div class="quote-card flex items-center justify-between p-4">
+                            <div class="flex-1">
+                                <p class="font-bold text-gray-800">📦 ${quote.details.supplierName || 'No Supplier'}</p>
+                                <p class="text-sm text-gray-500">Quote #${quote.quoteNumber} • ${new Date(quote.createdAt).toLocaleDateString('en-GB')} <span class="text-green-500 font-medium">(Shared)</span></p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="App.loadQuote('${quote.id}')" class="btn btn-primary text-white font-semibold py-2 px-4 rounded-lg">
+                                    📂 Load
+                                </button>
+                                <button onclick="App.deleteQuote('${quote.id}')" class="btn btn-danger text-white font-semibold py-2 px-3 rounded-lg" title="Delete Quote">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>`
+                    ).join(''); 
+                }); 
+            },
+            listenForCostRequests() { 
+                if(!this.requestsCollection) return; 
+                const listContainer = document.getElementById('cost-requests-list'); 
+                onSnapshot(query(this.requestsCollection), (snapshot) => { 
+                    if (snapshot.empty) { 
+                        listContainer.innerHTML = '<p class="text-gray-500">No pending requests.</p>'; 
+                        return; 
+                    } 
+                    const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)); 
+                    listContainer.innerHTML = requests.map(req => 
+                        `<div class="request-card p-4"> 
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <p class="font-bold text-gray-800">🏢 ${req.clientName}</p> 
+                                    <p class="text-sm text-gray-600">📤 Request from ${req.requesterName} on ${req.createdAt ? new Date(req.createdAt.seconds * 1000).toLocaleDateString('en-GB') : 'N/A'}</p> 
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 text-sm">
+                                        <p><b>🌍 From:</b> ${req.origin}</p>
+                                        <p><b>🎯 To:</b> ${req.destination}</p>
+                                        ${req.totalWeight ? `<p><b>⚖️ Weight:</b> ${req.totalWeight} kg</p>` : ''}
+                                        ${req.incoterm ? `<p><b>📋 Incoterm:</b> ${req.incoterm}</p>` : ''}
+                                        ${req.totalCost ? `<p><b>💰 Cost:</b> ${req.totalCost} ${req.currency || ''}</p>` : ''}
+                                    </div>
+                                    <p class="text-sm mt-2"><b>📦 Commodity:</b> ${req.commodity}</p> 
+                                    ${req.notes ? `<p class="text-sm mt-2 italic text-gray-600"><b>📝 Notes:</b> ${req.notes}</p>` : ''}
+                                </div>
+                                <div class="flex items-center gap-2 ml-4">
+                                    <button onclick="App.generateCostFromRequest('${req.id}')" class="btn btn-success text-white font-semibold py-2 px-4 rounded-lg">
+                                        🚀 Generate Cost
+                                    </button>
+                                    <button onclick="App.deleteCostRequest('${req.id}')" class="btn btn-danger text-white font-semibold py-2 px-3 rounded-lg" title="Delete Request">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`
+                    ).join(''); 
+                }); 
+            },
+            
+            async deleteQuote(quoteId) {
+                if (!this.db) {
+                    showToast('Database not available', 'error');
+                    return;
+                }
+                
+                if (!confirm('Are you sure you want to delete this quote? This action cannot be undone.')) {
+                    return;
+                }
+                
+                try {
+                    await deleteDoc(doc(this.db, "quotes", quoteId));
+                    showToast('Quote deleted successfully! 🗑️', 'success');
+                } catch (error) {
+                    console.error("Error deleting quote: ", error);
+                    showToast("Failed to delete quote. Please try again.", 'error');
+                }
+            },
+            
+            async deleteCostRequest(requestId) {
+                if (!this.db) {
+                    showToast('Database not available', 'error');
+                    return;
+                }
+                
+                if (!confirm('Are you sure you want to delete this request? This action cannot be undone.')) {
+                    return;
+                }
+                
+                try {
+                    await deleteDoc(doc(this.db, "cost_requests", requestId));
+                    showToast('Request deleted successfully! 🗑️', 'success');
+                } catch (error) {
+                    console.error("Error deleting request: ", error);
+                    showToast("Failed to delete request. Please try again.", 'error');
+                }
+            },
+            
+            deleteLocalQuote(quoteId) {
+                if (!confirm('Are you sure you want to delete this local quote? This action cannot be undone.')) {
+                    return;
+                }
+                
+                try {
+                    const quotes = JSON.parse(localStorage.getItem('synerore_quotes') || '[]');
+                    const filteredQuotes = quotes.filter(q => q.id !== quoteId);
+                    localStorage.setItem('synerore_quotes', JSON.stringify(filteredQuotes));
+                    this.loadLocalQuotes();
+                    showToast('Local quote deleted successfully! 🗑️', 'success');
+                } catch (error) {
+                    console.error('Error deleting local quote:', error);
+                    showToast('Failed to delete local quote.', 'error');
+                }
+            },
+            
+            async generateCostFromRequest(requestId) {
+                if (!this.db) {
+                    alert('Database not available');
+                    return;
+                }
+                
+                try {
+                    console.log('Loading cost request with ID:', requestId);
+                    const requestDoc = await getDoc(doc(this.db, "cost_requests", requestId));
+                    
+                    if (requestDoc.exists()) {
+                        const requestData = requestDoc.data();
+                        console.log('Request data loaded:', requestData);
+                        
+                        // Pre-populate form with request data
+                        const supplierEl = document.getElementById('sd-supplierName');
+                        const polEl = document.getElementById('sd-pol');
+                        const podEl = document.getElementById('sd-pod');
+                        const commodityEl = document.getElementById('sd-commodity');
+                        const incotermEl = document.getElementById('sd-incoterm');
+                        const totalKgEl = document.getElementById('lc-totalKg');
+                        const commercialValueEl = document.getElementById('lc-commercialInvoiceValue');
+                        
+                        if (supplierEl) supplierEl.value = requestData.clientName || '';
+                        if (polEl) polEl.value = requestData.origin || '';
+                        if (podEl) podEl.value = requestData.destination || '';
+                        if (commodityEl) commodityEl.value = requestData.commodity || '';
+                        if (incotermEl && requestData.incoterm) incotermEl.value = requestData.incoterm;
+                        if (totalKgEl && requestData.totalWeight) totalKgEl.value = requestData.totalWeight;
+                        if (commercialValueEl && requestData.totalCost) commercialValueEl.value = requestData.totalCost;
+                        
+                        // Switch to cost generator page
+                        this.switchPage('cost-generator-page');
+                        this.updateDisplay();
+                        
+                        showToast(`Cost generation started for ${requestData.clientName} 🚀`, 'success');
+                        
+                    } else {
+                        alert("Request not found.");
+                    }
+                } catch (error) {
+                    console.error("Error loading cost request: ", error);
+                    alert("Error loading request: " + error.message);
+                }
+            },
+            
+            async submitCostRequest(e) { 
+                e.preventDefault(); 
+                if(!this.requestsCollection) return; 
+                const button = e.target.querySelector('button[type="submit"]'); 
+                button.disabled = true; 
+                button.textContent = 'Submitting...'; 
+                try { 
+                    await addDoc(this.requestsCollection, { 
+                        requesterName: document.getElementById('req-name').value, 
+                        requesterEmail: document.getElementById('req-email').value, 
+                        clientName: document.getElementById('req-client').value, 
+                        origin: document.getElementById('req-origin').value, 
+                        destination: document.getElementById('req-destination').value, 
+                        commodity: document.getElementById('req-commodity').value, 
+                        notes: document.getElementById('req-notes').value,
+                        totalWeight: document.getElementById('req-weight').value,
+                        incoterm: document.getElementById('req-incoterm').value,
+                        totalCost: document.getElementById('req-cost').value,
+                        currency: document.getElementById('req-currency').value,
+                        status: 'pending', 
+                        createdAt: serverTimestamp() 
+                    }); 
+                    showToast('Request submitted successfully! 📋 It will appear in Pending Quotes.', 'success'); 
+                    e.target.reset(); 
+                } catch (error) { 
+                    console.error("Error submitting request: ", error); 
+                    alert("Error submitting request: " + error.message);
+                } finally { 
+                    button.disabled = false; 
+                    button.textContent = 'Submit Request'; 
+                } 
+            },
+        };
+
+        // --- INITIALIZATION ---
+        window.App = App; // Make App globally accessible
+        App.init();
+
+    </script>
+</body>
+</html>

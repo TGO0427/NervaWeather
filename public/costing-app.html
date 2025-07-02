@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synerore - Costing Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" xintegrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .sidebar-link.active { background-color: #4f46e5; color: white; }
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen bg-gray-200">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gray-800 text-white flex flex-col">
+            <div class="flex items-center justify-center gap-x-3 p-4 border-b border-gray-700">
+                <img src="https://placehold.co/40x40/6366f1/ffffff?text=S" alt="Synerore Logo" class="h-10 w-10 rounded-full">
+                <span class="text-xl font-bold">Synerore</span>
+            </div>
+            <nav id="sidebar-nav" class="flex-1 px-2 py-4 space-y-2">
+                <a href="#dashboard" data-page="dashboard-page" class="sidebar-link flex items-center px-4 py-2 rounded-md hover:bg-gray-700">Dashboard</a>
+                <a href="#generator" data-page="cost-generator-page" class="sidebar-link flex items-center px-4 py-2 rounded-md hover:bg-gray-700">Cost Generator</a>
+                <a href="#request" data-page="cost-request-page" class="sidebar-link flex items-center px-4 py-2 rounded-md hover:bg-gray-700">Cost Request</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white shadow-md">
+                 <div class="flex items-center justify-between px-6 py-3">
+                    <h1 id="page-title" class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                    <div id="header-buttons" class="flex items-center gap-x-2">
+                        <!-- Buttons will be dynamically added here -->
+                    </div>
+                </div>
+            </header>
+            
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Saved Quotes</h3>
+                            <div id="saved-quotes-list" class="space-y-3"></div>
+                        </div>
+                        <div>
+                             <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Pending Cost Requests</h3>
+                             <div id="cost-requests-list" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Generator Page -->
+                <div id="cost-generator-page" class="page">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 space-y-6">
+                            <div id="shipment-details" class="bg-white p-4 rounded-lg shadow-sm"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Shipment Details</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Exchange Rates (to ZAR)</h3><div id="exchange-rates" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div></div>
+                            <div id="cost-sections"></div>
+                        </div>
+                        <div class="lg:col-span-1 space-y-6">
+                            <div class="bg-white p-4 rounded-lg shadow-sm sticky top-6"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Costing Summary</h3><div id="summary-output" class="space-y-2 text-sm"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm" style="position:sticky; top: 24rem;"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Landed Cost Calculator</h3><div id="landed-cost-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="landed-cost-output" class="space-y-2 text-sm"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Request Page -->
+                <div id="cost-request-page" class="page">
+                    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Submit a Costing Request</h2>
+                        <form id="cost-request-form" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">Your Name</label><input type="text" id="req-name" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Your Email</label><input type="email" id="req-email" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                            </div>
+                             <div><label class="block text-sm font-medium text-gray-700">Client Name</label><input type="text" id="req-client" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">Origin</label><input type="text" id="req-origin" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Destination</label><input type="text" id="req-destination" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700">Commodity Description</label><textarea id="req-commodity" rows="3" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></textarea></div>
+                            <div><label class="block text-sm font-medium text-gray-700">Additional Notes or Special Instructions</label><textarea id="req-notes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></textarea></div>
+                            <div class="text-right"><button type="submit" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">Submit Request</button></div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- GLOBAL STATE & CONFIG ---
+        const state = { 
+            shipmentDetails: { 
+                client: { label: 'Client Name', value: 'ABC Importers', type: 'text' }, 
+                supplierName: { label: 'Supplier Name', value: 'Qida Chemical Co. Ltd', type: 'select', options: ['Qida Chemical Co. Ltd', 'AROMSA BESIN AROMA VE KATKI MADDELERI SAN. VE TIC. A.S.', 'SACCO S.R.L', 'Futura Ingredients', 'MARCEL CARRAGEENAN', 'AB Mauri', 'KMC', 'Ornua Co-operative Limeted', 'Halavet Gida Sanayi Ve Ticaret A.S', 'Delta Iris', 'Tristar Global'] },
+                pol: { label: 'Port of Loading (POL)', value: 'Shanghai', type: 'select', options: ['Shanghai', 'Ningbo', 'Qingdao', 'Singapore', 'Rotterdam', 'Hamburg', 'Los Angeles', 'Durban', 'Cape Town', 'Gqeberha', 'Jakarta', 'Port Klang', 'Istanbul', 'Istanbul,Ambarlı', 'Nhava Sheva', 'Dublin', 'Auckland'] }, 
+                pod: { label: 'Port of Discharge (POD)', value: 'Durban', type: 'select', options: ['Durban', 'Cape Town', 'Gqeberha', 'Shanghai', 'Ningbo', 'Qingdao', 'Singapore', 'Rotterdam', 'Hamburg', 'Los Angeles', 'Jakarta', 'Port Klang', 'Istanbul', 'Istanbul,Ambarlı', 'Nhava Sheva', 'Dublin', 'Auckland'] }, 
+                shippingLine: { label: 'Shipping Line', value: 'Maersk', type: 'select', options: ['Maersk', 'MSC', 'CMA CGM', 'COSCO', 'Hapag-Lloyd', 'PIL', 'ONE', 'MAERSK'] }, 
+                containerSize: { label: 'Container Size', value: "40' HC", type: 'select', options: ["20' GP", "40' GP", "40' HC", "20' OT", "40' OT", "20' FR", "40' FR"] }, 
+                commodity: { label: 'Commodity', value: 'General Goods', type: 'text' }, 
+                incoterm: { label: 'Incoterm', value: 'FOB', type: 'select', options: ['EXW', 'FOB', 'CFR', 'CIF', 'DAP', 'DDP'] } 
+            }, 
+            exchangeRates: { usd: { label: 'USD to ZAR', value: '18.50' }, eur: { label: 'EUR to ZAR', value: '20.20' }, gbp: { label: 'GBP to ZAR', value: '23.50' } }, 
+            costs: { 
+                freight: { title: 'Freight costs', currencyOptions: ['USD', 'EUR', 'GBP'], items: { seaFreight: { label: 'Sea Freight', value: '2500', currency: 'usd' }, peakSeasonSurcharge: { label: 'Peak Season Surcharge', value: '0', currency: 'usd' }, bunkerSurcharge: { label: 'Bunker Surcharge', value: '300', currency: 'usd' }, adminFee: { label: 'Admin Fee', value: '50', currency: 'usd' } } }, 
+                origin: { title: 'Origin charges', currencyOptions: ['USD', 'EUR', 'GBP'], items: { thc: { label: 'THC', value: '150', currency: 'usd' }, documentation: { label: 'Documentation', value: '75', currency: 'usd' }, cartage: { label: 'Cartage', value: '0', currency: 'usd' }, exportCustoms: { label: 'Export Customs', value: '100', currency: 'usd' } } }, 
+                destinationCharges: { title: 'Destination charges', currencyOptions: ['ZAR'], items: { shippingLineCharges: { label: 'Shipping line charges', value: '0', currency: 'zar' }, cargoDues20ft: { label: 'Cargo dues 20ft', value: '0', currency: 'zar' }, cargoDues40ft: { label: 'Cargo dues 40ft', value: '0', currency: 'zar' }, ctoFee: { label: 'CTO fee', value: '0', currency: 'zar' } } }, 
+                clearing: { title: 'Forwarding & clearing', currencyOptions: ['ZAR'], items: { agencyFee: { label: 'Agency Fee', value: '1850', currency: 'zar' }, customsClearance: { label: 'Customs Clearance', value: '950', currency: 'zar' }, documentation: { label: 'Documentation', value: '450', currency: 'zar' }, portHealthInspection: { label: 'Port health inspection', value: '0', currency: 'zar' }, daffInspection: { label: 'DAFF inspection', value: '0', currency: 'zar' }, stateVetCancellation: { label: 'State vet cancellation fee', value: '0', currency: 'zar' }, nbTurnIn: { label: 'NB turn in', value: '0', currency: 'zar' }, vesselAc: { label: 'Vessel A&C', value: '0', currency: 'zar' } } },
+                transport: { title: 'Transport and warehousing', currencyOptions: ['ZAR'], items: { localCartageCptUnder20: { label: 'Local cartage: CPT to Klapmuts < 20 ton', value: '0', currency: 'zar' }, localCartageCpt21_28: { label: 'Local cartage: CPT to Klapmuts 21-28 ton', value: '0', currency: 'zar' }, transportDbnPta20ft: { label: 'Transport: DBN port to Pretoria - 20ft < 20 tons, direct', value: '0', currency: 'zar' }, transportDbnWhs: { label: 'Transport: DBN port to WHS', value: '0', currency: 'zar' }, unpackReload: { label: 'Unpack / Reload', value: '0', currency: 'zar' }, storage: { label: 'Storage (3 days free)', value: '0', currency: 'zar' }, outlyingSurcharge: { label: 'Outlying container depot surcharge', value: '0', currency: 'zar' }, localCartageDbnPtaA: { label: 'Local cartage: DBN WHS to Pretoria - Option A', value: '0', currency: 'zar' }, localCartageDbnPtaB: { label: 'Local cartage: DBN WHS to Pretoria - Option B', value: '0', currency: 'zar' }, localCartageDbn6m: { label: 'Local cartage: DBN WHS to Pretoria - 6m deckspace', value: '0', currency: 'zar' }, localCartageDbn12m: { label: 'Local cartage: DBN WHS to Pretoria - 12m deckspace', value: '0', currency: 'zar' }, transportPePta: { label: 'Transport: PE/Coega port to Pretoria', value: '0', currency: 'zar' } } } 
+            }, 
+            landedCost: { commercialInvoiceValue: { label: 'Commercial Invoice Value (USD)', value: '15000' }, dutyRate: { label: 'Rate of Duty (%)', value: '5' }, totalKg: { label: 'Total Kg', value: '1000' } } 
+        };
+        const VAT_RATE = 0.15;
+
+        // --- UTILITY FUNCTIONS ---
+        const formatCurrency = (value, currency = 'ZAR') => new Intl.NumberFormat('en-ZA', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(parseFloat(value) || 0);
+
+        // --- CORE APP LOGIC ---
+        const App = {
+            db: null,
+            userId: null,
+            quotesCollection: null,
+            requestsCollection: null,
+
+            elements: {
+                pageTitle: document.getElementById('page-title'),
+                headerButtons: document.getElementById('header-buttons'),
+                pages: document.querySelectorAll('.page'),
+                sidebarNav: document.getElementById('sidebar-nav'),
+            },
+
+            async init() {
+                await this.initFirebase(); 
+                this.generateInputs();
+                this.updateDisplay();
+                this.attachEventListeners();
+                this.handleInitialPageLoad();
+                if (this.db) {
+                    this.listenForQuotes();
+                    this.listenForCostRequests();
+                }
+            },
+
+            async initFirebase() {
+                try {
+                    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                    if (!firebaseConfig.apiKey) {
+                        throw new Error("Firebase config is missing or invalid.");
+                    }
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    const app = initializeApp(firebaseConfig);
+                    this.db = getFirestore(app);
+                    const auth = getAuth(app);
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); }
+                    this.userId = auth.currentUser.uid;
+                    this.quotesCollection = collection(this.db, "artifacts", appId, "public", "data", "quotes");
+                    this.requestsCollection = collection(this.db, "artifacts", appId, "public", "data", "cost_requests");
+                } catch(e) {
+                    console.error("Firebase initialization failed:", e);
+                }
+            },
+
+            switchPage(pageId) {
+                if (!pageId) return;
+                
+                this.elements.headerButtons.innerHTML = ''; 
+                if (pageId === 'cost-generator-page') {
+                    this.elements.headerButtons.innerHTML = `<button id="save-quote-button" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700">Save Quote</button><button id="pdf-button" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700">Generate PDF</button>`;
+                }
+                
+                this.elements.pages.forEach(p => p.classList.toggle('active', p.id === pageId));
+                document.querySelectorAll('.sidebar-link').forEach(link => link.classList.toggle('active', link.dataset.page === pageId));
+                
+                const activeLink = document.querySelector(`.sidebar-link[data-page="${pageId}"]`);
+                if (activeLink) {
+                    this.elements.pageTitle.textContent = activeLink.textContent.trim();
+                }
+            },
+            
+            attachEventListeners() {
+                this.elements.sidebarNav.addEventListener('click', (e) => {
+                    if (e.target && e.target.matches('a.sidebar-link')) {
+                        e.preventDefault();
+                        const pageId = e.target.dataset.page;
+                        if(pageId) {
+                           window.location.hash = e.target.hash;
+                           this.switchPage(pageId);
+                        }
+                    }
+                });
+                
+                this.elements.headerButtons.addEventListener('click', (e) => {
+                    if (e.target.id === 'save-quote-button') this.saveQuote();
+                    if (e.target.id === 'pdf-button') this.generatePdf();
+                });
+                
+                document.getElementById('cost-generator-page').addEventListener('input', () => this.updateDisplay());
+                document.getElementById('cost-request-form').addEventListener('submit', (e) => this.submitCostRequest(e));
+                document.getElementById('saved-quotes-list').addEventListener('click', (e) => {
+                    if (e.target && e.target.matches('button.load-quote-button')) {
+                        this.loadQuote(e.target.dataset.quoteId);
+                    }
+                });
+            },
+            
+            handleInitialPageLoad() {
+                const initialHash = window.location.hash.substring(1);
+                const validPages = ['dashboard', 'generator', 'request'];
+                const initialPage = validPages.includes(initialHash) ? initialHash : 'dashboard';
+                this.switchPage(`${initialPage}-page`);
+            },
+            
+            getCurrentData(fullState = false) { const currentValues = { details: {}, exchangeRates: {}, costs: {}, landedCost: {} }; for (const key in state.shipmentDetails) currentValues.details[key] = document.getElementById(`sd-${key}`).value; for (const key in state.exchangeRates) currentValues.exchangeRates[key] = document.getElementById(`er-${key}`).value; for (const sectionKey in state.costs) { currentValues.costs[sectionKey] = {}; for (const itemKey in state.costs[sectionKey].items) { const valueEl = document.getElementById(`cost-${sectionKey}-${itemKey}-value`); const currencyEl = document.getElementById(`cost-${sectionKey}-${itemKey}-currency`); if(valueEl) { currentValues.costs[sectionKey][itemKey] = { value: valueEl.value, currency: currencyEl?.value }; } } } for (const key in state.landedCost) { const el = document.getElementById(`lc-${key}`); if (el) currentValues.landedCost[key] = el.value; } if (fullState) { const now = new Date(); currentValues.quoteNumber = `SYN-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${now.getTime().toString().slice(-4)}`; currentValues.createdAt = now.toISOString(); currentValues.createdBy = this.userId; } return currentValues; },
+            async saveQuote() {
+                if (!this.quotesCollection) {
+                    alert("Cannot save quote. The app is not connected to the database. Please ensure you are running this from a web server and not a local file.");
+                    return;
+                }
+                const button = document.getElementById('save-quote-button'); 
+                if (!button) return; 
+                button.disabled = true; button.textContent = 'Saving...'; 
+                try { 
+                    await addDoc(this.quotesCollection, this.getCurrentData(true)); 
+                    alert('Quote saved successfully!'); 
+                } catch (error) { 
+                    console.error("Error saving quote: ", error); 
+                    alert("Failed to save quote. See console for details.");
+                } finally { 
+                    if(button) { button.disabled = false; button.textContent = 'Save Quote'; }
+                } 
+            },
+            async loadQuote(quoteId) { if (!this.db) return; try { const quoteDoc = await getDoc(doc(this.db, "artifacts", appId, "public", "data", "quotes", quoteId)); if (quoteDoc.exists()) { const data = quoteDoc.data(); for (const key in data.details) { const el = document.getElementById(`sd-${key}`); if(el) el.value = data.details[key]; } for (const key in data.exchangeRates) { const el = document.getElementById(`er-${key}`); if(el) el.value = data.exchangeRates[key]; } for (const sectionKey in state.costs) { if(data.costs[sectionKey]) { for (const itemKey in state.costs[sectionKey].items) { if(data.costs[sectionKey][itemKey] && document.getElementById(`cost-${sectionKey}-${itemKey}-value`)) { document.getElementById(`cost-${sectionKey}-${itemKey}-value`).value = data.costs[sectionKey][itemKey].value; const currencySelect = document.getElementById(`cost-${sectionKey}-${itemKey}-currency`); if (currencySelect) currencySelect.value = data.costs[sectionKey][itemKey].currency; } } } } for (const key in data.landedCost) { const el = document.getElementById(`lc-${key}`); if(el) el.value = data.landedCost[key]; } if(data.landedCost.units && !data.landedCost.totalKg) { const kgEl = document.getElementById('lc-totalKg'); if(kgEl) kgEl.value = data.landedCost.units; } this.updateDisplay(); this.switchPage('cost-generator-page'); alert('Quote loaded successfully!'); } else { alert("Quote not found."); } } catch (error) { console.error("Error loading quote: ", error); } },
+            generatePdf() { const { details, totals, landed } = this.calculateAll(); const now = new Date(); const quoteNumber = `SYN-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${now.getTime().toString().slice(-4)}`; const todayDate = now.toLocaleDateString('en-GB'); const pdfHtml = ` <div style="font-family: Arial, sans-serif; color: #333; margin: 25px;"> <table style="width: 100%; border-bottom: 2px solid #6366f1;"> <tr> <td style="width: 50%;"><img src="https://placehold.co/150x50/6366f1/ffffff?text=Synerore" alt="Synerore Logo" style="width: 150px;"></td> <td style="width: 50%; text-align: right;"> <h1 style="font-size: 28px; color: #6366f1; margin: 0;">Cost Estimate</h1> <p style="margin: 2px 0;"><b>Quote #:</b> ${quoteNumber}</p> <p style="margin: 2px 0;"><b>Date:</b> ${todayDate}</p> </td> </tr> </table> <table style="width: 100%; margin-top: 25px;"> <tr> <td style="vertical-align: top; width: 50%;"><h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px;">Prepared For:</h2><p style="margin: 2px 0;"><strong>${details.client}</strong></p></td> <td style="vertical-align: top; width: 50%;"><h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px;">Shipment Details:</h2><p style="margin: 2px 0;"><strong>Origin:</strong> ${details.pol}</p><p style="margin: 2px 0;"><strong>Destination:</strong> ${details.pod}</p><p style="margin: 2px 0;"><strong>Container:</strong> ${details.containerSize}</p><p style="margin: 2px 0;"><strong>Commodity:</strong> ${details.commodity}</p></td> </tr> </table> <h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin: 25px 0 10px 0;">Costing Summary (in ZAR)</h2> <table style="width: 100%; border-collapse: collapse;"> <tr style="background-color: #f3f4f6;"><th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Description</th><th style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd;">Amount</th></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Freight Costs</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalFreight)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Origin Charges</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalOrigin)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Destination Charges</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalDestinationCharges)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Forwarding & Clearing</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalClearing)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Transport & Warehousing</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.subtotalTransport)}</td></tr> <tr style="font-weight: bold;"><td style="padding: 8px; border-top: 2px solid #333; border-bottom: 1px solid #eee;">Sub-Total (excl. VAT)</td><td style="padding: 8px; text-align: right; border-top: 2px solid #333; border-bottom: 1px solid #eee;">${formatCurrency(totals.preVatTotal)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">VAT on Services (15%)</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(totals.vatOnServices)}</td></tr> <tr style="background-color: #eef2ff; font-weight: bold; font-size: 18px;"><td style="padding: 10px;">Grand Total</td><td style="padding: 10px; text-align: right;">${formatCurrency(totals.grandTotal)}</td></tr> </table> <h2 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin: 25px 0 10px 0;">Landed Cost Breakdown</h2> <table style="width: 100%; border-collapse: collapse;"> <tr style="background-color: #f3f4f6;"><th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Description</th><th style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd;">Amount</th></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Commercial Value (ZAR)</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(landed.commercialValueZAR)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Customs Duty</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(landed.dutyAmount)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">VAT on Goods</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(landed.vatOnGoods)}</td></tr> <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Total Clearing & Forwarding Costs</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">${formatCurrency(landed.totalClearingCosts)}</td></tr> <tr style="font-weight: bold; font-size: 16px;"><td style="padding: 8px; border-top: 2px solid #333; border-bottom: 1px solid #eee;">Total Landed Cost</td><td style="padding: 8px; text-align: right; border-top: 2px solid #333; border-bottom: 1px solid #eee;">${formatCurrency(landed.totalLandedCost)}</td></tr> <tr style="background-color: #dcfce7; font-weight: bold; font-size: 18px;"><td style="padding: 10px;">Cost per Kg</td><td style="padding: 10px; text-align: right;">${formatCurrency(landed.costPerKg)}</td></tr> </table> <div style="margin-top: 40px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 12px; color: #777;"><p><strong>Terms & Conditions:</strong></p><p>This is an estimate only and is subject to change based on final weights, dimensions, and applicable rates at the time of shipment. All business is conducted in accordance with our standard trading terms and conditions, available on request.</p><p style="margin-top: 10px;">Synerore (Pty) Ltd</p></div> </div>`; const options = { margin: 0.5, filename: `Synerore-Costing-${details.client.replace(/ /g, '_')}-${quoteNumber}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }; html2pdf().from(pdfHtml).set(options).save(); },
+            calculateAll() {
+                const currentValues = this.getCurrentData();
+                const { details } = currentValues;
+                const zarRates = { ...Object.fromEntries(Object.entries(currentValues.exchangeRates).map(([k,v]) => [k, parseFloat(v)])), zar: 1 };
+                const calculateSectionTotal = (section) => Object.values(section).reduce((acc, item) => acc + (parseFloat(item.value || 0) * (zarRates[item.currency] || 0)), 0);
+                
+                const totals = { 
+                    subtotalFreight: calculateSectionTotal(currentValues.costs.freight), 
+                    subtotalOrigin: calculateSectionTotal(currentValues.costs.origin), 
+                    subtotalDestinationCharges: calculateSectionTotal(currentValues.costs.destinationCharges), 
+                    subtotalClearing: calculateSectionTotal(currentValues.costs.clearing),
+                    subtotalTransport: calculateSectionTotal(currentValues.costs.transport),
+                };
+                                
+                totals.preVatTotal = totals.subtotalFreight + totals.subtotalOrigin + totals.subtotalDestinationCharges + totals.subtotalClearing + totals.subtotalTransport;
+                totals.vatOnServices = (totals.subtotalDestinationCharges + totals.subtotalClearing + totals.subtotalTransport) * VAT_RATE;
+                totals.grandTotal = totals.preVatTotal + totals.vatOnServices;
+                
+                const landed = {};
+                landed.commercialValueZAR = parseFloat(currentValues.landedCost.commercialInvoiceValue) * zarRates.usd;
+                const dutyBaseValue = landed.commercialValueZAR * 1.1;
+                landed.dutyAmount = dutyBaseValue * (parseFloat(currentValues.landedCost.dutyRate) / 100);
+                const vatBaseValue = dutyBaseValue + landed.dutyAmount;
+                landed.vatOnGoods = vatBaseValue * VAT_RATE;
+                landed.totalClearingCosts = totals.subtotalDestinationCharges + totals.subtotalClearing + totals.subtotalTransport + totals.vatOnServices;
+                landed.totalLandedCost = landed.commercialValueZAR + landed.dutyAmount + landed.vatOnGoods + landed.totalClearingCosts;
+                const totalKg = parseFloat(currentValues.landedCost.totalKg) || 1;
+                landed.costPerKg = landed.totalLandedCost / totalKg;
+                return { details, totals, landed };
+            },
+            updateDisplay() { 
+                const { totals, landed } = this.calculateAll(); 
+                document.getElementById('summary-output').innerHTML = ` <div class="flex justify-between"><span class="text-gray-600">Freight Costs:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalFreight)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Origin Charges:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalOrigin)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Destination Charges:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalDestinationCharges)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Forwarding & Clearing:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalClearing)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Transport & Warehousing:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalTransport)}</span></div> <div class="border-t my-2"></div> <div class="flex justify-between text-base"><span class="font-semibold text-gray-700">Sub-Total (excl. VAT):</span> <span class="font-bold text-gray-900">${formatCurrency(totals.preVatTotal)}</span></div> <div class="flex justify-between"><span class="text-gray-600">VAT on Services (15%):</span> <span class="font-medium text-gray-800">${formatCurrency(totals.vatOnServices)}</span></div> <div class="border-t my-2 border-indigo-200"></div> <div class="flex justify-between text-xl p-2 bg-indigo-50 rounded-md"><span class="font-bold text-indigo-800">Grand Total:</span> <span class="font-extrabold text-indigo-900">${formatCurrency(totals.grandTotal)}</span></div> `; 
+                document.getElementById('landed-cost-output').innerHTML = ` <div class="flex justify-between"><span class="text-gray-600">Commercial Value (ZAR):</span> <span class="font-medium text-gray-800">${formatCurrency(landed.commercialValueZAR)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Customs Duty:</span> <span class="font-medium text-gray-800">${formatCurrency(landed.dutyAmount)}</span></div> <div class="flex justify-between"><span class="text-gray-600">VAT on Goods:</span> <span class="font-medium text-gray-800">${formatCurrency(landed.vatOnGoods)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Total Clearing Costs:</span> <span class="font-medium text-gray-800">${formatCurrency(landed.totalClearingCosts)}</span></div> <div class="border-t my-2"></div> <div class="flex justify-between text-base"><span class="font-semibold text-gray-700">Total Landed Cost:</span> <span class="font-bold text-gray-900">${formatCurrency(landed.totalLandedCost)}</span></div> <div class="border-t my-2 border-green-200"></div> <div class="flex justify-between text-xl p-2 bg-green-50 rounded-md"><span class="font-bold text-green-800">Cost per Kg:</span> <span class="font-extrabold text-green-900">${formatCurrency(landed.costPerKg)}</span></div> `; 
+            },
+            generateInputs() { 
+                document.querySelector('#shipment-details .grid').innerHTML = Object.entries(state.shipmentDetails).map(([key, item]) => { let fieldHtml = `<label class="block text-sm font-medium text-gray-600 mb-1">${item.label}</label>`; if (item.type === 'select') { fieldHtml += `<select id="sd-${key}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> ${item.options.map(opt => `<option value="${opt}" ${opt === item.value ? 'selected' : ''}>${opt}</option>`).join('')} </select>`; } else { fieldHtml += `<input type="text" id="sd-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800">`; } return `<div>${fieldHtml}</div>`; }).join(''); 
+                document.getElementById('exchange-rates').innerHTML = Object.entries(state.exchangeRates).map(([key, item]) => ` <div> <label class="block text-sm font-medium text-gray-600 mb-1">${item.label}</label> <input type="number" step="0.01" id="er-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> </div>`).join(''); 
+                document.getElementById('cost-sections').innerHTML = Object.entries(state.costs).map(([sectionKey, section]) => { const fieldsHtml = Object.entries(section.items).map(([itemKey, item]) => { const isPercent = item.currency === 'percent'; return ` <div> <label class="block text-sm font-medium text-gray-600 mb-1">${item.label}</label> <div class="flex items-center"> <input type="number" step="0.01" id="cost-${sectionKey}-${itemKey}-value" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" placeholder="0.00"> ${isPercent ? `<span class="inline-flex items-center px-3 text-gray-600 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">%</span>` : `<select id="cost-${sectionKey}-${itemKey}-currency" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md focus:outline-none"> ${section.currencyOptions.map(c => `<option value="${c.toLowerCase()}" ${c.toLowerCase() === item.currency ? 'selected' : ''}>${c}</option>`).join('')} </select>`} </div> </div>`; }).join(''); return `<div class="bg-white p-4 rounded-lg shadow-sm mb-6"> <h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">${section.title}</h3> <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${fieldsHtml}</div> </div>`; }).join(''); 
+                document.getElementById('landed-cost-inputs').innerHTML = Object.entries(state.landedCost).map(([key, item]) => ` <div> <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label> <input type="number" step="0.01" id="lc-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> </div>`).join(''); 
+            },
+            listenForQuotes() { if (!this.quotesCollection) return; const listContainer = document.getElementById('saved-quotes-list'); onSnapshot(query(this.quotesCollection), (snapshot) => { if (snapshot.empty) { listContainer.innerHTML = '<p class="text-gray-500">No quotes saved yet.</p>'; return; } const quotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); listContainer.innerHTML = quotes.map(quote => `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"><div><p class="font-bold text-gray-800">${quote.details.client || 'No Client'}</p><p class="text-sm text-gray-500">Quote #${quote.quoteNumber} &bull; ${new Date(quote.createdAt).toLocaleDateString('en-GB')}</p></div><button data-quote-id="${quote.id}" class="load-quote-button bg-blue-500 text-white font-semibold py-1 px-3 rounded-md hover:bg-blue-600">Load</button></div>`).join(''); }); },
+            listenForCostRequests() { if(!this.requestsCollection) return; const listContainer = document.getElementById('cost-requests-list'); onSnapshot(query(this.requestsCollection), (snapshot) => { if (snapshot.empty) { listContainer.innerHTML = '<p class="text-gray-500">No pending requests.</p>'; return; } const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)); listContainer.innerHTML = requests.map(req => `<div class="p-3 bg-yellow-50 rounded-lg border border-yellow-200"> <p class="font-bold text-gray-800">${req.clientName}</p> <p class="text-sm text-gray-600">Request from ${req.requesterName} on ${req.createdAt ? new Date(req.createdAt.seconds * 1000).toLocaleDateString('en-GB') : 'N/A'}</p> <p class="text-sm mt-2"><b>From:</b> ${req.origin} <b>To:</b> ${req.destination}</p> <p class="text-sm mt-1"><b>Commodity:</b> ${req.commodity}</p> ${req.notes ? `<p class="text-sm mt-1 italic text-gray-500"><b>Notes:</b> ${req.notes}</p>` : ''} </div>`).join(''); }); },
+            async submitCostRequest(e) { e.preventDefault(); if(!this.requestsCollection) return; const button = e.target.querySelector('button[type="submit"]'); button.disabled = true; button.textContent = 'Submitting...'; try { await addDoc(this.requestsCollection, { requesterName: document.getElementById('req-name').value, requesterEmail: document.getElementById('req-email').value, clientName: document.getElementById('req-client').value, origin: document.getElementById('req-origin').value, destination: document.getElementById('req-destination').value, commodity: document.getElementById('req-commodity').value, notes: document.getElementById('req-notes').value, status: 'pending', createdAt: serverTimestamp() }); alert('Request submitted successfully!'); e.target.reset(); } catch (error) { console.error("Error submitting request: ", error); } finally { button.disabled = false; button.textContent = 'Submit Request'; } },
+        };
+
+        // --- INITIALIZATION ---
+        App.init();
+
+    </script>
+</body>
+</html>
