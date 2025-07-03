@@ -859,18 +859,43 @@
             },
 
             async init() {
-                await this.initFirebase(); 
-                await this.initExchangeRates();
-                this.generateInputs();
-                this.updateDisplay();
-                this.attachEventListeners();
-                this.handleInitialPageLoad();
-                if (this.db) {
-                    this.listenForQuotes();
-                    this.listenForCostRequests();
-                } else {
-                    // Fallback to local storage when Firebase is not available
-                    this.loadLocalQuotes();
+                try {
+                    console.log('🚀 Starting app initialization...');
+                    
+                    console.log('📡 Initializing Firebase...');
+                    await this.initFirebase(); 
+                    
+                    console.log('💱 Initializing exchange rates...');
+                    await this.initExchangeRates();
+                    
+                    console.log('📝 Generating form inputs...');
+                    this.generateInputs();
+                    
+                    console.log('🔄 Updating display...');
+                    this.updateDisplay();
+                    
+                    console.log('🎯 Attaching event listeners...');
+                    this.attachEventListeners();
+                    
+                    console.log('📄 Handling initial page load...');
+                    this.handleInitialPageLoad();
+                    
+                    if (this.db) {
+                        console.log('🔄 Setting up real-time listeners...');
+                        this.listenForQuotes();
+                        this.listenForCostRequests();
+                    } else {
+                        console.log('💾 Loading local quotes (offline mode)...');
+                        this.loadLocalQuotes();
+                    }
+                    
+                    console.log('✅ App initialization completed successfully!');
+                    showToast('Application loaded successfully! 🎉', 'success');
+                    
+                } catch (error) {
+                    console.error('❌ App initialization failed:', error);
+                    showToast('Application failed to load. Check console for details.', 'error');
+                    throw error; // Re-throw to be caught by outer try-catch
                 }
             },
 
@@ -1398,18 +1423,31 @@
                     
                     // Generate Origin Charges (NEW SECTION)
                     const originContainer = document.getElementById('origin-charges-section');
-                    if (originContainer && state.originCharges) {
-                        const originFieldsHtml = Object.entries(state.originCharges.items).map(([itemKey, item]) => { 
-                            const isPercent = item.currency === 'percent'; 
-                            return `<div> 
-                                <label class="block text-sm font-medium text-gray-600 mb-1">${item.label}</label> 
-                                <div class="flex items-center"> 
-                                    <input type="number" step="0.01" id="origin-${itemKey}-value" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" placeholder="0.00"> 
-                                    ${isPercent ? `<span class="inline-flex items-center px-3 text-gray-600 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">%</span>` : `<select id="origin-${itemKey}-currency" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md focus:outline-none"> ${state.originCharges.currencyOptions.map(c => `<option value="${c.toLowerCase()}" ${c.toLowerCase() === item.currency ? 'selected' : ''}>${c}</option>`).join('')} </select>`} 
-                                </div> 
-                            </div>`; 
-                        }).join('');
-                        originContainer.innerHTML = originFieldsHtml;
+                    if (originContainer) {
+                        if (state.originCharges && state.originCharges.items && state.originCharges.currencyOptions) {
+                            try {
+                                const originFieldsHtml = Object.entries(state.originCharges.items).map(([itemKey, item]) => { 
+                                    const isPercent = item.currency === 'percent'; 
+                                    return `<div> 
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">${item.label || itemKey}</label> 
+                                        <div class="flex items-center"> 
+                                            <input type="number" step="0.01" id="origin-${itemKey}-value" value="${item.value || '0'}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" placeholder="0.00"> 
+                                            ${isPercent ? `<span class="inline-flex items-center px-3 text-gray-600 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">%</span>` : `<select id="origin-${itemKey}-currency" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md focus:outline-none"> ${state.originCharges.currencyOptions.map(c => `<option value="${c.toLowerCase()}" ${c.toLowerCase() === (item.currency || 'usd') ? 'selected' : ''}>${c}</option>`).join('')} </select>`} 
+                                        </div> 
+                                    </div>`; 
+                                }).join('');
+                                originContainer.innerHTML = originFieldsHtml;
+                                console.log('✅ Origin charges section generated successfully');
+                            } catch (error) {
+                                console.error('❌ Error generating origin charges:', error);
+                                originContainer.innerHTML = '<div class="text-red-500 p-4">Error loading origin charges section</div>';
+                            }
+                        } else {
+                            console.warn('⚠️ Origin charges not properly configured in state');
+                            originContainer.innerHTML = '<div class="text-yellow-600 p-4">Origin charges configuration missing</div>';
+                        }
+                    } else {
+                        console.error('❌ Origin charges container not found');
                     }
                     
                     // Generate remaining Cost Sections (excluding origin which is now separate)
@@ -1649,7 +1687,65 @@
 
         // --- INITIALIZATION ---
         window.App = App; // Make App globally accessible
-        App.init();
+        
+        // Safe initialization with error handling
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Verify required DOM elements exist
+                const requiredElements = [
+                    'dashboard-page',
+                    'cost-generator-page', 
+                    'cost-request-page',
+                    'shipment-details',
+                    'origin-charges-section',
+                    'exchange-rates',
+                    'cost-sections'
+                ];
+                
+                const missingElements = requiredElements.filter(id => !document.getElementById(id));
+                
+                if (missingElements.length > 0) {
+                    console.error('Missing required DOM elements:', missingElements);
+                    document.body.innerHTML = `
+                        <div style="padding: 20px; font-family: Arial; color: red;">
+                            <h2>Loading Error</h2>
+                            <p>Missing DOM elements: ${missingElements.join(', ')}</p>
+                            <p>Please refresh the page or contact support.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Validate state object
+                if (!state || !state.shipmentDetails || !state.originCharges || !state.costs) {
+                    console.error('State object not properly initialized:', state);
+                    document.body.innerHTML = `
+                        <div style="padding: 20px; font-family: Arial; color: red;">
+                            <h2>Configuration Error</h2>
+                            <p>Application state not properly initialized.</p>
+                            <p>Please refresh the page.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                console.log('✅ All required elements found, initializing app...');
+                App.init();
+                
+            } catch (error) {
+                console.error('❌ App initialization failed:', error);
+                document.body.innerHTML = `
+                    <div style="padding: 20px; font-family: Arial; color: red;">
+                        <h2>Initialization Error</h2>
+                        <p>Error: ${error.message}</p>
+                        <p>Please refresh the page or check the browser console for details.</p>
+                        <button onclick="location.reload()" style="margin-top: 10px; padding: 10px; background: #007cba; color: white; border: none; cursor: pointer;">
+                            🔄 Refresh Page
+                        </button>
+                    </div>
+                `;
+            }
+        });
 
     </script>
 </body>
