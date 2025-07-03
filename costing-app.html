@@ -556,6 +556,7 @@
                         <div class="lg:col-span-1 space-y-6">
                             <div class="bg-white p-4 rounded-lg shadow-sm sticky top-6"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Costing Summary</h3><div id="summary-output" class="space-y-2 text-sm"></div></div>
                             <div class="bg-white p-4 rounded-lg shadow-sm" style="position:sticky; top: 24rem;"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Landed Cost Calculator</h3><div id="landed-cost-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="landed-cost-output" class="space-y-2 text-sm"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm" style="position:sticky; top: 48rem;"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">💰 Pricing Strategy</h3><div id="pricing-strategy-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="pricing-strategy-output" class="space-y-2 text-sm"></div></div>
                         </div>
                     </div>
                 </div>
@@ -645,7 +646,15 @@
                 clearing: { title: 'Forwarding & clearing', currencyOptions: ['ZAR'], items: { agencyFee: { label: 'Agency Fee', value: '1850', currency: 'zar' }, customsClearance: { label: 'Customs Clearance', value: '950', currency: 'zar' }, documentation: { label: 'Documentation', value: '450', currency: 'zar' }, portHealthInspection: { label: 'Port health inspection', value: '0', currency: 'zar' }, daffInspection: { label: 'DAFF inspection', value: '0', currency: 'zar' }, stateVetCancellation: { label: 'State vet cancellation fee', value: '0', currency: 'zar' }, nbTurnIn: { label: 'NB turn in', value: '0', currency: 'zar' }, vesselAc: { label: 'Vessel A&C', value: '0', currency: 'zar' } } },
                 transport: { title: 'Transport and warehousing', currencyOptions: ['ZAR'], items: { localCartageCptUnder20: { label: 'Local cartage: CPT to Klapmuts < 20 ton', value: '0', currency: 'zar' }, localCartageCpt21_28: { label: 'Local cartage: CPT to Klapmuts 21-28 ton', value: '0', currency: 'zar' }, transportDbnPta20ft: { label: 'Transport: DBN port to Pretoria - 20ft < 20 tons, direct', value: '0', currency: 'zar' }, transportDbnWhs: { label: 'Transport: DBN port to WHS', value: '0', currency: 'zar' }, unpackReload: { label: 'Unpack / Reload', value: '0', currency: 'zar' }, storage: { label: 'Storage (3 days free)', value: '0', currency: 'zar' }, outlyingSurcharge: { label: 'Outlying container depot surcharge', value: '0', currency: 'zar' }, localCartageDbnPtaA: { label: 'Local cartage: DBN WHS to Pretoria - Option A', value: '0', currency: 'zar' }, localCartageDbnPtaB: { label: 'Local cartage: DBN WHS to Pretoria - Option B', value: '0', currency: 'zar' }, localCartageDbn6m: { label: 'Local cartage: DBN WHS to Pretoria - 6m deckspace', value: '0', currency: 'zar' }, localCartageDbn12m: { label: 'Local cartage: DBN WHS to Pretoria - 12m deckspace', value: '0', currency: 'zar' }, transportPePta: { label: 'Transport: PE/Coega port to Pretoria', value: '0', currency: 'zar' } } } 
             }, 
-            landedCost: { commercialInvoiceValue: { label: 'Commercial Invoice Value (USD)', value: '15000' }, dutyRate: { label: 'Rate of Duty (%)', value: '5' }, totalKg: { label: 'Total Kg', value: '1000' } } 
+            landedCost: { commercialInvoiceValue: { label: 'Commercial Invoice Value (USD)', value: '15000' }, dutyRate: { label: 'Rate of Duty (%)', value: '5' }, totalKg: { label: 'Total Kg', value: '1000' } },
+            pricingStrategy: {
+                unitQuantity: { label: 'Unit Quantity', value: '100', type: 'number' },
+                pricingMethod: { label: 'Pricing Method', value: 'margin', options: ['margin', 'markup', 'manual'] },
+                marginPercent: { label: 'Desired Margin (%)', value: '25', type: 'number' },
+                markupPercent: { label: 'Markup (%)', value: '35', type: 'number' },
+                manualSellPrice: { label: 'Sell Price per Unit (ZAR)', value: '0', type: 'number' },
+                targetCurrency: { label: 'Pricing Currency', value: 'zar', options: ['zar', 'usd', 'eur'] }
+            }
         };
         const VAT_RATE = 0.15;
 
@@ -1189,6 +1198,29 @@
                     console.log('❌ Validation failed:', validation.message);
                     return false;
                 }
+
+                // Show container capacity warnings
+                if (validation.warnings && validation.warnings.length > 0) {
+                    validation.warnings.forEach(warning => {
+                        showToast(warning, 'warning');
+                    });
+                }
+
+                // Additional container size validation
+                const containerSizeEl = document.getElementById('sd-containerSize');
+                if (containerSizeEl && totalKg) {
+                    const containerValidation = ValidationUtil.validateContainerCapacity(totalKg, containerSizeEl.value);
+                    if (containerValidation.errors.length > 0) {
+                        containerValidation.errors.forEach(error => {
+                            showToast(error, 'error');
+                        });
+                    }
+                    if (containerValidation.warnings.length > 0) {
+                        containerValidation.warnings.forEach(warning => {
+                            showToast(warning, 'warning');
+                        });
+                    }
+                }
                 
                 // Clear any previous validation errors
                 ValidationUtil.clearValidationError(ratePerKgEl);
@@ -1287,6 +1319,7 @@
                 const kg = parseFloat(totalKg);
                 
                 const errors = [];
+                const warnings = [];
                 
                 if (isNaN(rate) || rate <= 0) {
                     errors.push('Rate per Kg must be a positive number');
@@ -1304,14 +1337,50 @@
                     errors.push('Rate per Kg seems unusually high (over $1000)');
                 }
                 
+                // Container capacity warnings
+                if (kg > 0) {
+                    if (kg > 28000) {
+                        warnings.push('⚠️ Weight exceeds 40ft container limit (28,000kg max)');
+                    } else if (kg > 21000) {
+                        warnings.push('⚠️ Weight exceeds 20ft container limit (21,000kg max)');
+                    }
+                }
+                
                 if (kg > 50000) {
                     errors.push('Total Kg seems unusually high (over 50,000kg)');
                 }
                 
                 return {
                     isValid: errors.length === 0,
-                    message: errors.join('. ')
+                    message: errors.join('. '),
+                    warnings: warnings
                 };
+            },
+
+            validateContainerCapacity(totalKg, containerSize) {
+                const kg = parseFloat(totalKg);
+                const warnings = [];
+                const errors = [];
+
+                if (kg > 0 && containerSize) {
+                    const limits = {
+                        '20ft': { maxWeight: 21000, maxVolume: 33, name: '20ft Container' },
+                        '40ft': { maxWeight: 26500, maxVolume: 67, name: '40ft Container' },
+                        '40ft HC': { maxWeight: 28000, maxVolume: 76, name: '40ft High Cube' },
+                        '45ft': { maxWeight: 28000, maxVolume: 86, name: '45ft Container' }
+                    };
+
+                    const limit = limits[containerSize];
+                    if (limit) {
+                        if (kg > limit.maxWeight) {
+                            errors.push(`🚨 Weight (${kg.toLocaleString()}kg) exceeds ${limit.name} limit (${limit.maxWeight.toLocaleString()}kg)`);
+                        } else if (kg > limit.maxWeight * 0.9) {
+                            warnings.push(`⚠️ Weight (${kg.toLocaleString()}kg) approaching ${limit.name} limit (${limit.maxWeight.toLocaleString()}kg)`);
+                        }
+                    }
+                }
+
+                return { errors, warnings };
             },
             
             showValidationError(message, element = null) {
@@ -1725,6 +1794,170 @@
                     showToast(`Filtering by: ${filter}`, 'info');
                 }
             },
+
+            // --- PRICING STRATEGY METHODS ---
+            updatePricingMethod(method) {
+                state.pricingStrategy.pricingMethod.value = method;
+                
+                // Show/hide relevant input fields
+                const marginContainer = document.getElementById('ps-marginPercent-container');
+                const markupContainer = document.getElementById('ps-markupPercent-container');
+                const manualContainer = document.getElementById('ps-manualSellPrice-container');
+                
+                if (marginContainer) marginContainer.style.display = method === 'margin' ? 'block' : 'none';
+                if (markupContainer) markupContainer.style.display = method === 'markup' ? 'block' : 'none';
+                if (manualContainer) manualContainer.style.display = method === 'manual' ? 'block' : 'none';
+                
+                // Update calculations
+                this.updatePricingStrategy();
+                
+                console.log('💰 Pricing method changed to:', method);
+            },
+
+            updatePricingStrategy() {
+                try {
+                    const { totals, landed } = this.calculateAll();
+                    
+                    // Get current pricing inputs
+                    const unitQuantity = parseFloat(document.getElementById('ps-unitQuantity')?.value || state.pricingStrategy.unitQuantity.value);
+                    const pricingMethod = document.getElementById('ps-pricingMethod')?.value || state.pricingStrategy.pricingMethod.value;
+                    const targetCurrency = document.getElementById('ps-targetCurrency')?.value || state.pricingStrategy.targetCurrency.value;
+                    const marginPercent = parseFloat(document.getElementById('ps-marginPercent')?.value || state.pricingStrategy.marginPercent.value);
+                    const markupPercent = parseFloat(document.getElementById('ps-markupPercent')?.value || state.pricingStrategy.markupPercent.value);
+                    const manualSellPrice = parseFloat(document.getElementById('ps-manualSellPrice')?.value || state.pricingStrategy.manualSellPrice.value);
+                    
+                    // Calculate base costs
+                    const totalLandedCostZAR = landed.totalLandedCost;
+                    const costPerUnit = totalLandedCostZAR / unitQuantity;
+                    
+                    // Exchange rates for target currency
+                    const zarRates = { 
+                        zar: 1, 
+                        usd: parseFloat(state.exchangeRates.usd.value), 
+                        eur: parseFloat(state.exchangeRates.eur.value) 
+                    };
+                    
+                    const costPerUnitInTargetCurrency = costPerUnit / zarRates[targetCurrency];
+                    
+                    // Calculate pricing based on method
+                    let sellPricePerUnit, profit, profitMargin, markup;
+                    
+                    if (pricingMethod === 'margin') {
+                        // Margin = (Sell Price - Cost) / Sell Price * 100
+                        // Sell Price = Cost / (1 - Margin/100)
+                        sellPricePerUnit = costPerUnitInTargetCurrency / (1 - marginPercent / 100);
+                        profit = sellPricePerUnit - costPerUnitInTargetCurrency;
+                        profitMargin = marginPercent;
+                        markup = (profit / costPerUnitInTargetCurrency) * 100;
+                    } else if (pricingMethod === 'markup') {
+                        // Markup = (Sell Price - Cost) / Cost * 100
+                        // Sell Price = Cost * (1 + Markup/100)
+                        sellPricePerUnit = costPerUnitInTargetCurrency * (1 + markupPercent / 100);
+                        profit = sellPricePerUnit - costPerUnitInTargetCurrency;
+                        profitMargin = (profit / sellPricePerUnit) * 100;
+                        markup = markupPercent;
+                    } else { // manual
+                        sellPricePerUnit = manualSellPrice;
+                        profit = sellPricePerUnit - costPerUnitInTargetCurrency;
+                        profitMargin = (profit / sellPricePerUnit) * 100;
+                        markup = (profit / costPerUnitInTargetCurrency) * 100;
+                    }
+                    
+                    const totalRevenue = sellPricePerUnit * unitQuantity;
+                    const totalProfit = profit * unitQuantity;
+                    
+                    // Currency symbols
+                    const currencySymbols = { zar: 'R', usd: '$', eur: '€' };
+                    const symbol = currencySymbols[targetCurrency];
+                    
+                    // Update display
+                    const outputContainer = document.getElementById('pricing-strategy-output');
+                    if (outputContainer) {
+                        outputContainer.innerHTML = `
+                            <div class="space-y-3">
+                                <!-- Cost Analysis -->
+                                <div class="bg-gray-50 p-3 rounded-md">
+                                    <h4 class="font-semibold text-gray-700 mb-2">📊 Cost Analysis</h4>
+                                    <div class="space-y-1 text-xs">
+                                        <div class="flex justify-between">
+                                            <span>Total Landed Cost:</span>
+                                            <span class="font-medium">${formatCurrency(totalLandedCostZAR)}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Cost per Unit (${targetCurrency.toUpperCase()}):</span>
+                                            <span class="font-medium">${symbol}${costPerUnitInTargetCurrency.toFixed(2)}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Unit Quantity:</span>
+                                            <span class="font-medium">${unitQuantity.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pricing Results -->
+                                <div class="bg-blue-50 p-3 rounded-md border border-blue-200">
+                                    <h4 class="font-semibold text-blue-700 mb-2">💰 Pricing Results</h4>
+                                    <div class="space-y-1 text-xs">
+                                        <div class="flex justify-between">
+                                            <span>Sell Price per Unit:</span>
+                                            <span class="font-bold text-blue-800">${symbol}${sellPricePerUnit.toFixed(2)}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Profit per Unit:</span>
+                                            <span class="font-medium text-green-600">${symbol}${profit.toFixed(2)}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Profit Margin:</span>
+                                            <span class="font-medium ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}">${profitMargin.toFixed(1)}%</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Markup:</span>
+                                            <span class="font-medium">${markup.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Total Financial Impact -->
+                                <div class="bg-green-50 p-3 rounded-md border border-green-200">
+                                    <h4 class="font-semibold text-green-700 mb-2">🎯 Total Impact</h4>
+                                    <div class="space-y-1 text-xs">
+                                        <div class="flex justify-between">
+                                            <span>Total Revenue:</span>
+                                            <span class="font-bold text-green-800">${symbol}${totalRevenue.toLocaleString()}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Total Profit:</span>
+                                            <span class="font-bold ${totalProfit >= 0 ? 'text-green-800' : 'text-red-600'}">${symbol}${totalProfit.toLocaleString()}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Break-even Units:</span>
+                                            <span class="font-medium">${Math.ceil(totalLandedCostZAR / (sellPricePerUnit * zarRates[targetCurrency])).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                ${profit < 0 ? `<div class="bg-red-50 p-2 rounded-md border border-red-200">
+                                    <span class="text-xs text-red-700">⚠️ Warning: Current pricing results in a loss!</span>
+                                </div>` : ''}
+                            </div>
+                        `;
+                    }
+                    
+                    console.log('📈 Pricing strategy updated:', {
+                        method: pricingMethod,
+                        sellPrice: sellPricePerUnit,
+                        profit: profit,
+                        margin: profitMargin
+                    });
+                    
+                } catch (error) {
+                    console.error('Error updating pricing strategy:', error);
+                    const outputContainer = document.getElementById('pricing-strategy-output');
+                    if (outputContainer) {
+                        outputContainer.innerHTML = '<div class="text-red-600 text-sm">Error calculating pricing. Please check your inputs.</div>';
+                    }
+                }
+            },
             
             getCurrentData(fullState = false) { 
                 const currentValues = { details: {}, exchangeRates: {}, originCharges: {}, costs: {}, landedCost: {} }; 
@@ -2055,6 +2288,9 @@
                 const { totals, landed } = this.calculateAll(); 
                 document.getElementById('summary-output').innerHTML = ` <div class="flex justify-between"><span class="text-gray-600">Freight Costs:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalFreight)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Origin Charges:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalOrigin)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Destination Charges:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalDestinationCharges)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Forwarding & Clearing:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalClearing)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Transport & Warehousing:</span> <span class="font-medium text-gray-800">${formatCurrency(totals.subtotalTransport)}</span></div> <div class="border-t my-2"></div> <div class="flex justify-between text-base"><span class="font-semibold text-gray-700">Sub-Total (excl. VAT):</span> <span class="font-bold text-gray-900">${formatCurrency(totals.preVatTotal)}</span></div> <div class="flex justify-between"><span class="text-gray-600">VAT on Services (15%):</span> <span class="font-medium text-gray-800">${formatCurrency(totals.vatOnServices)}</span></div> <div class="border-t my-2 border-indigo-200"></div> <div class="flex justify-between text-xl p-2 bg-indigo-50 rounded-md"><span class="font-bold text-indigo-800">Grand Total:</span> <span class="font-extrabold text-indigo-900">${formatCurrency(totals.grandTotal)}</span></div> `; 
                 document.getElementById('landed-cost-output').innerHTML = ` <div class="flex justify-between"><span class="text-gray-600">Commercial Value (ZAR):</span> <span class="font-medium text-gray-800">${formatCurrency(landed.commercialValueZAR)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Customs Duty:</span> <span class="font-medium text-gray-800">${formatCurrency(landed.dutyAmount)}</span></div> <div class="flex justify-between"><span class="text-gray-600">VAT on Goods:</span> <span class="font-medium text-gray-800">${formatCurrency(landed.vatOnGoods)}</span></div> <div class="flex justify-between"><span class="text-gray-600">Total Clearing Costs:</span> <span class="font-medium text-gray-800">${formatCurrency(landed.totalClearingCosts)}</span></div> <div class="border-t my-2"></div> <div class="flex justify-between text-base"><span class="font-semibold text-gray-700">Total Landed Cost:</span> <span class="font-bold text-gray-900">${formatCurrency(landed.totalLandedCost)}</span></div> <div class="border-t my-2 border-green-200"></div> <div class="flex justify-between text-xl p-2 bg-green-50 rounded-md"><span class="font-bold text-green-800">Cost per Kg:</span> <span class="font-extrabold text-green-900">${formatCurrency(landed.costPerKg)}</span></div> `; 
+                
+                // Update pricing strategy
+                setTimeout(() => this.updatePricingStrategy(), 10);
             },
             generateInputs() { 
                 try {
@@ -2139,6 +2375,46 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label> 
                             <input type="number" step="0.01" id="lc-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> 
                         </div>`).join(''); 
+                    }
+                    
+                    // Generate Pricing Strategy inputs
+                    const pricingContainer = document.getElementById('pricing-strategy-inputs');
+                    if (pricingContainer) {
+                        const pricingFields = Object.entries(state.pricingStrategy).map(([key, item]) => {
+                            if (key === 'pricingMethod') {
+                                return `<div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label>
+                                    <select id="ps-${key}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" onchange="App.updatePricingMethod(this.value)">
+                                        <option value="margin" ${item.value === 'margin' ? 'selected' : ''}>Margin % (Profit Target)</option>
+                                        <option value="markup" ${item.value === 'markup' ? 'selected' : ''}>Markup % (Cost Plus)</option>
+                                        <option value="manual" ${item.value === 'manual' ? 'selected' : ''}>Manual Sell Price</option>
+                                    </select>
+                                </div>`;
+                            } else if (key === 'targetCurrency') {
+                                return `<div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label>
+                                    <select id="ps-${key}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" onchange="App.updatePricingStrategy()">
+                                        <option value="zar" ${item.value === 'zar' ? 'selected' : ''}>ZAR (South African Rand)</option>
+                                        <option value="usd" ${item.value === 'usd' ? 'selected' : ''}>USD (US Dollar)</option>
+                                        <option value="eur" ${item.value === 'eur' ? 'selected' : ''}>EUR (Euro)</option>
+                                    </select>
+                                </div>`;
+                            } else {
+                                const isConditional = (key === 'marginPercent' && state.pricingStrategy.pricingMethod.value !== 'margin') ||
+                                                    (key === 'markupPercent' && state.pricingStrategy.pricingMethod.value !== 'markup') ||
+                                                    (key === 'manualSellPrice' && state.pricingStrategy.pricingMethod.value !== 'manual');
+                                                    
+                                return `<div ${isConditional ? 'style="display: none;"' : ''} id="ps-${key}-container">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label>
+                                    <input type="number" step="0.01" id="ps-${key}" value="${item.value}" 
+                                           class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" 
+                                           oninput="App.updatePricingStrategy()" placeholder="Enter ${item.label.toLowerCase()}">
+                                </div>`;
+                            }
+                        }).join('');
+                        
+                        pricingContainer.innerHTML = pricingFields;
+                        console.log('✅ Pricing strategy inputs generated');
                     }
                 } catch (error) {
                     console.error('Error in generateInputs:', error);
