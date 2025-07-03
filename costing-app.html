@@ -871,6 +871,9 @@
                     console.log('📝 Generating form inputs...');
                     this.generateInputs();
                     
+                    // Small delay to ensure DOM elements are ready
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
                     console.log('🔄 Updating display...');
                     this.updateDisplay();
                     
@@ -1116,18 +1119,35 @@
                 const currentValues = { details: {}, exchangeRates: {}, originCharges: {}, costs: {}, landedCost: {} }; 
                 
                 // Collect shipment details
-                for (const key in state.shipmentDetails) currentValues.details[key] = document.getElementById(`sd-${key}`).value; 
+                for (const key in state.shipmentDetails) {
+                    const element = document.getElementById(`sd-${key}`);
+                    currentValues.details[key] = element ? element.value : state.shipmentDetails[key].value;
+                }
                 
                 // Collect exchange rates
-                for (const key in state.exchangeRates) currentValues.exchangeRates[key] = document.getElementById(`er-${key}`).value; 
+                for (const key in state.exchangeRates) {
+                    const element = document.getElementById(`er-${key}`);
+                    currentValues.exchangeRates[key] = element ? element.value : state.exchangeRates[key].value;
+                } 
                 
                 // Collect origin charges (NEW)
-                for (const itemKey in state.originCharges.items) { 
-                    const valueEl = document.getElementById(`origin-${itemKey}-value`); 
-                    const currencyEl = document.getElementById(`origin-${itemKey}-currency`); 
-                    if(valueEl) { 
-                        currentValues.originCharges[itemKey] = { value: valueEl.value, currency: currencyEl?.value }; 
-                    } 
+                if (state.originCharges && state.originCharges.items) {
+                    for (const itemKey in state.originCharges.items) { 
+                        const valueEl = document.getElementById(`origin-${itemKey}-value`); 
+                        const currencyEl = document.getElementById(`origin-${itemKey}-currency`); 
+                        if(valueEl) { 
+                            currentValues.originCharges[itemKey] = { 
+                                value: valueEl.value, 
+                                currency: currencyEl ? currencyEl.value : state.originCharges.items[itemKey].currency 
+                            }; 
+                        } else {
+                            // Fallback to state values if elements don't exist
+                            currentValues.originCharges[itemKey] = {
+                                value: state.originCharges.items[itemKey].value,
+                                currency: state.originCharges.items[itemKey].currency
+                            };
+                        }
+                    }
                 }
                 
                 // Collect remaining cost sections (excluding origin which is now separate)
@@ -1137,15 +1157,24 @@
                         const valueEl = document.getElementById(`cost-${sectionKey}-${itemKey}-value`); 
                         const currencyEl = document.getElementById(`cost-${sectionKey}-${itemKey}-currency`); 
                         if(valueEl) { 
-                            currentValues.costs[sectionKey][itemKey] = { value: valueEl.value, currency: currencyEl?.value }; 
-                        } 
+                            currentValues.costs[sectionKey][itemKey] = { 
+                                value: valueEl.value, 
+                                currency: currencyEl ? currencyEl.value : state.costs[sectionKey].items[itemKey].currency 
+                            }; 
+                        } else {
+                            // Fallback to state values if elements don't exist
+                            currentValues.costs[sectionKey][itemKey] = {
+                                value: state.costs[sectionKey].items[itemKey].value,
+                                currency: state.costs[sectionKey].items[itemKey].currency
+                            };
+                        }
                     } 
                 } 
                 
                 // Collect landed cost data
                 for (const key in state.landedCost) { 
                     const el = document.getElementById(`lc-${key}`); 
-                    if (el) currentValues.landedCost[key] = el.value; 
+                    currentValues.landedCost[key] = el ? el.value : state.landedCost[key].value; 
                 } 
                 
                 if (fullState) { 
