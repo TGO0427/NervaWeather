@@ -576,12 +576,10 @@
             },
             originCharges: { 
                 title: 'Origin charges', 
-                currencyOptions: ['USD', 'EUR', 'GBP'], 
+                currencyOptions: ['USD', 'EUR'], 
                 items: { 
-                    thc: { label: 'THC', value: '150', currency: 'usd' }, 
-                    documentation: { label: 'Documentation', value: '75', currency: 'usd' }, 
-                    cartage: { label: 'Cartage', value: '0', currency: 'usd' }, 
-                    exportCustoms: { label: 'Export Customs', value: '100', currency: 'usd' } 
+                    ratePerKg: { label: 'Rate per Kg', value: '12.50', currency: 'usd' },
+                    totalKg: { label: 'Total Kg', value: '1000', currency: 'kg' }
                 } 
             },
             costs: { 
@@ -843,6 +841,37 @@
                 });
             });
         });
+
+        // --- AUTO-CALCULATION FUNCTION ---
+        function updateCommercialValue() {
+            const ratePerKgEl = document.getElementById('origin-ratePerKg-value');
+            const totalKgEl = document.getElementById('origin-totalKg-value');
+            const ratePerKgCurrencyEl = document.getElementById('origin-ratePerKg-currency');
+            const commercialValueEl = document.getElementById('lc-commercialInvoiceValue');
+            const landedTotalKgEl = document.getElementById('lc-totalKg');
+            
+            if (ratePerKgEl && totalKgEl && commercialValueEl) {
+                const ratePerKg = parseFloat(ratePerKgEl.value) || 0;
+                const totalKg = parseFloat(totalKgEl.value) || 0;
+                const currency = ratePerKgCurrencyEl ? ratePerKgCurrencyEl.value : 'usd';
+                
+                // Calculate total value
+                const totalValue = ratePerKg * totalKg;
+                
+                // Update commercial invoice value (always in USD for landed cost calculation)
+                commercialValueEl.value = totalValue.toFixed(2);
+                
+                // Also update the total kg in landed cost section to match
+                if (landedTotalKgEl) {
+                    landedTotalKgEl.value = totalKg.toString();
+                }
+                
+                // Update display if app is loaded
+                if (window.App && App.updateDisplay) {
+                    App.updateDisplay();
+                }
+            }
+        }
 
         // --- CORE APP LOGIC ---
         const App = {
@@ -1405,9 +1434,20 @@
                 const zarRates = { ...Object.fromEntries(Object.entries(currentValues.exchangeRates).map(([k,v]) => [k, parseFloat(v)])), zar: 1 };
                 const calculateSectionTotal = (section) => Object.values(section).reduce((acc, item) => acc + (parseFloat(item.value || 0) * (zarRates[item.currency] || 0)), 0);
                 
+                // Special calculation for Origin Charges (rate per kg * total kg)
+                const calculateOriginTotal = (originCharges) => {
+                    if (originCharges.ratePerKg && originCharges.totalKg) {
+                        const ratePerKg = parseFloat(originCharges.ratePerKg.value || 0);
+                        const totalKg = parseFloat(originCharges.totalKg.value || 0);
+                        const currency = originCharges.ratePerKg.currency || 'usd';
+                        return ratePerKg * totalKg * (zarRates[currency] || 0);
+                    }
+                    return 0;
+                };
+                
                 const totals = { 
                     subtotalFreight: calculateSectionTotal(currentValues.costs.freight), 
-                    subtotalOrigin: calculateSectionTotal(currentValues.originCharges), // Updated: now uses separate originCharges
+                    subtotalOrigin: calculateOriginTotal(currentValues.originCharges), // Updated: now uses special origin calculation
                     subtotalDestinationCharges: calculateSectionTotal(currentValues.costs.destinationCharges), 
                     subtotalClearing: calculateSectionTotal(currentValues.costs.clearing),
                     subtotalTransport: calculateSectionTotal(currentValues.costs.transport),
@@ -1456,12 +1496,15 @@
                         if (state.originCharges && state.originCharges.items && state.originCharges.currencyOptions) {
                             try {
                                 const originFieldsHtml = Object.entries(state.originCharges.items).map(([itemKey, item]) => { 
+                                    const isKg = item.currency === 'kg';
                                     const isPercent = item.currency === 'percent'; 
                                     return `<div> 
                                         <label class="block text-sm font-medium text-gray-600 mb-1">${item.label || itemKey}</label> 
                                         <div class="flex items-center"> 
-                                            <input type="number" step="0.01" id="origin-${itemKey}-value" value="${item.value || '0'}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" placeholder="0.00"> 
-                                            ${isPercent ? `<span class="inline-flex items-center px-3 text-gray-600 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">%</span>` : `<select id="origin-${itemKey}-currency" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md focus:outline-none"> ${state.originCharges.currencyOptions.map(c => `<option value="${c.toLowerCase()}" ${c.toLowerCase() === (item.currency || 'usd') ? 'selected' : ''}>${c}</option>`).join('')} </select>`} 
+                                            <input type="number" step="0.01" id="origin-${itemKey}-value" value="${item.value || '0'}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" placeholder="0.00" ${isKg ? 'oninput="updateCommercialValue()"' : 'oninput="updateCommercialValue()"'}> 
+                                            ${isKg ? `<span class="inline-flex items-center px-3 text-gray-600 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">kg</span>` : 
+                                              isPercent ? `<span class="inline-flex items-center px-3 text-gray-600 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">%</span>` : 
+                                              `<select id="origin-${itemKey}-currency" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md focus:outline-none" onchange="updateCommercialValue()"> ${state.originCharges.currencyOptions.map(c => `<option value="${c.toLowerCase()}" ${c.toLowerCase() === (item.currency || 'usd') ? 'selected' : ''}>${c}</option>`).join('')} </select>`} 
                                         </div> 
                                     </div>`; 
                                 }).join('');
