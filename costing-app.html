@@ -325,9 +325,16 @@
             }
             
             /* Mobile Cards */
-            .card, .quote-card, .request-card {
+            .card, .quote-card, .request-card, .template-card {
                 margin-bottom: 16px;
                 border-radius: 8px;
+                transition: all 0.2s ease;
+            }
+            
+            .template-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                border-color: #3b82f6;
             }
             
             /* Mobile Form Elements */
@@ -475,14 +482,64 @@
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
                 <!-- Dashboard Page -->
                 <div id="dashboard-page" class="page">
+                    <!-- Quick Start Templates Section -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                🚀 Quick Start Templates
+                            </h2>
+                            <button 
+                                onclick="App.showAllTemplates()" 
+                                class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                                View All Templates →
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="template-grid">
+                            <!-- Templates will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Search Section -->
+                    <div class="mb-6">
+                        <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                            <h3 class="text-xl font-bold text-gray-800">📋 Quote Management</h3>
+                            <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                                <input 
+                                    type="text" 
+                                    id="quote-search" 
+                                    placeholder="Search quotes by supplier, route, or commodity..." 
+                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full md:w-80"
+                                    oninput="App.filterQuotes(this.value)"
+                                >
+                                <select 
+                                    id="quote-filter" 
+                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    onchange="App.filterQuotes()"
+                                >
+                                    <option value="">All Quotes</option>
+                                    <option value="this-week">This Week</option>
+                                    <option value="this-month">This Month</option>
+                                    <option value="high-value">High Value (>R100k)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Saved Quotes</h3>
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-gray-800 border-b pb-3">Saved Quotes</h3>
+                                <span id="quotes-count" class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-full">0</span>
+                            </div>
                             <div id="saved-quotes-list" class="space-y-3"></div>
                         </div>
                         <div>
-                             <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Pending Quotes</h3>
-                             <div id="cost-requests-list" class="space-y-3"></div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-gray-800 border-b pb-3">Pending Requests</h3>
+                                <span id="requests-count" class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-full">0</span>
+                            </div>
+                            <div id="cost-requests-list" class="space-y-3"></div>
                         </div>
                     </div>
                 </div>
@@ -591,6 +648,261 @@
             landedCost: { commercialInvoiceValue: { label: 'Commercial Invoice Value (USD)', value: '15000' }, dutyRate: { label: 'Rate of Duty (%)', value: '5' }, totalKg: { label: 'Total Kg', value: '1000' } } 
         };
         const VAT_RATE = 0.15;
+
+        // --- QUOTE TEMPLATES SYSTEM ---
+        const QuoteTemplates = {
+            templates: {
+                'asia-to-dbn': {
+                    name: 'Asia to Durban (Standard)',
+                    description: 'Common route from Asian ports to Durban',
+                    icon: '🚢',
+                    data: {
+                        shipmentDetails: {
+                            pol: 'Shanghai, China',
+                            pod: 'Durban, South Africa',
+                            containerSize: '40ft HC',
+                            commodity: 'General Cargo',
+                            supplierName: ''
+                        },
+                        originCharges: {
+                            ratePerKg: '8.50',
+                            totalKg: '2000'
+                        },
+                        costs: {
+                            freight: {
+                                seaFreight: '2800',
+                                bunkerSurcharge: '400',
+                                adminFee: '50'
+                            },
+                            destinationCharges: {
+                                shippingLineCharges: '1200',
+                                cargoDues40ft: '850'
+                            },
+                            clearing: {
+                                agencyFee: '1850',
+                                customsClearance: '950',
+                                documentation: '450'
+                            }
+                        },
+                        landedCost: {
+                            dutyRate: '7.5'
+                        }
+                    }
+                },
+                'europe-to-cpt': {
+                    name: 'Europe to Cape Town',
+                    description: 'Standard European imports via Cape Town',
+                    icon: '🇪🇺',
+                    data: {
+                        shipmentDetails: {
+                            pol: 'Hamburg, Germany',
+                            pod: 'Cape Town, South Africa',
+                            containerSize: '20ft',
+                            commodity: 'Machinery',
+                            supplierName: ''
+                        },
+                        originCharges: {
+                            ratePerKg: '12.00',
+                            totalKg: '1500'
+                        },
+                        costs: {
+                            freight: {
+                                seaFreight: '2200',
+                                bunkerSurcharge: '300',
+                                adminFee: '50'
+                            },
+                            destinationCharges: {
+                                shippingLineCharges: '900',
+                                cargoDues20ft: '650'
+                            },
+                            clearing: {
+                                agencyFee: '1850',
+                                customsClearance: '950',
+                                documentation: '450'
+                            }
+                        },
+                        landedCost: {
+                            dutyRate: '5.0'
+                        }
+                    }
+                },
+                'uk-machinery': {
+                    name: 'UK Machinery Import',
+                    description: 'Heavy machinery from UK with typical duty rates',
+                    icon: '🏭',
+                    data: {
+                        shipmentDetails: {
+                            pol: 'Southampton, UK',
+                            pod: 'Durban, South Africa',
+                            containerSize: '40ft HC',
+                            commodity: 'Industrial Machinery',
+                            supplierName: ''
+                        },
+                        originCharges: {
+                            ratePerKg: '15.50',
+                            totalKg: '3000'
+                        },
+                        costs: {
+                            freight: {
+                                seaFreight: '3200',
+                                bunkerSurcharge: '450',
+                                adminFee: '75'
+                            },
+                            destinationCharges: {
+                                shippingLineCharges: '1400',
+                                cargoDues40ft: '850'
+                            },
+                            clearing: {
+                                agencyFee: '2100',
+                                customsClearance: '1200',
+                                documentation: '600',
+                                daffInspection: '850'
+                            },
+                            transport: {
+                                transportDbnPta20ft: '4500'
+                            }
+                        },
+                        landedCost: {
+                            dutyRate: '0.0'
+                        }
+                    }
+                },
+                'china-textiles': {
+                    name: 'China Textiles',
+                    description: 'Textile imports from China with typical rates',
+                    icon: '🧵',
+                    data: {
+                        shipmentDetails: {
+                            pol: 'Ningbo, China',
+                            pod: 'Cape Town, South Africa',
+                            containerSize: '40ft HC',
+                            commodity: 'Textiles & Clothing',
+                            supplierName: ''
+                        },
+                        originCharges: {
+                            ratePerKg: '6.80',
+                            totalKg: '1800'
+                        },
+                        costs: {
+                            freight: {
+                                seaFreight: '2600',
+                                bunkerSurcharge: '380',
+                                adminFee: '50'
+                            },
+                            destinationCharges: {
+                                shippingLineCharges: '1100',
+                                cargoDues40ft: '850'
+                            },
+                            clearing: {
+                                agencyFee: '1850',
+                                customsClearance: '950',
+                                documentation: '450'
+                            }
+                        },
+                        landedCost: {
+                            dutyRate: '45.0'
+                        }
+                    }
+                },
+                'india-chemicals': {
+                    name: 'India Chemicals',
+                    description: 'Chemical products from India',
+                    icon: '⚗️',
+                    data: {
+                        shipmentDetails: {
+                            pol: 'Mumbai, India',
+                            pod: 'Durban, South Africa',
+                            containerSize: '20ft',
+                            commodity: 'Chemical Products',
+                            supplierName: ''
+                        },
+                        originCharges: {
+                            ratePerKg: '11.20',
+                            totalKg: '1200'
+                        },
+                        costs: {
+                            freight: {
+                                seaFreight: '1800',
+                                bunkerSurcharge: '250',
+                                adminFee: '50'
+                            },
+                            destinationCharges: {
+                                shippingLineCharges: '800',
+                                cargoDues20ft: '650'
+                            },
+                            clearing: {
+                                agencyFee: '1850',
+                                customsClearance: '950',
+                                documentation: '450',
+                                portHealthInspection: '750'
+                            }
+                        },
+                        landedCost: {
+                            dutyRate: '10.0'
+                        }
+                    }
+                }
+            },
+
+            getTemplate(templateId) {
+                return this.templates[templateId] || null;
+            },
+
+            getAllTemplates() {
+                return Object.entries(this.templates).map(([id, template]) => ({
+                    id,
+                    ...template
+                }));
+            },
+
+            applyTemplate(templateId) {
+                const template = this.getTemplate(templateId);
+                if (!template) return false;
+
+                // Apply template data to state
+                const templateData = template.data;
+                
+                // Update shipment details
+                Object.keys(templateData.shipmentDetails).forEach(key => {
+                    if (state.shipmentDetails[key] && templateData.shipmentDetails[key]) {
+                        state.shipmentDetails[key].value = templateData.shipmentDetails[key];
+                    }
+                });
+
+                // Update origin charges
+                if (templateData.originCharges) {
+                    Object.keys(templateData.originCharges).forEach(key => {
+                        if (state.originCharges.items[key]) {
+                            state.originCharges.items[key].value = templateData.originCharges[key];
+                        }
+                    });
+                }
+
+                // Update cost sections
+                if (templateData.costs) {
+                    Object.keys(templateData.costs).forEach(sectionKey => {
+                        if (state.costs[sectionKey]) {
+                            Object.keys(templateData.costs[sectionKey]).forEach(itemKey => {
+                                if (state.costs[sectionKey].items[itemKey]) {
+                                    state.costs[sectionKey].items[itemKey].value = templateData.costs[sectionKey][itemKey];
+                                }
+                            });
+                        }
+                    });
+                }
+
+                // Update landed cost
+                if (templateData.landedCost) {
+                    Object.keys(templateData.landedCost).forEach(key => {
+                        if (state.landedCost[key]) {
+                            state.landedCost[key].value = templateData.landedCost[key];
+                        }
+                    });
+                }
+
+                return true;
+            }
+        };
 
         // --- EXCHANGE RATE SERVICE ---
         class ExchangeRateService {
@@ -1282,6 +1594,11 @@
                 };
                 
                 this.elements.pageTitle.textContent = pageIcons[pageId] || 'Dashboard';
+                
+                // Load page-specific content
+                if (pageId === 'dashboard-page') {
+                    setTimeout(() => this.loadTemplateGrid(), 100);
+                }
             },
             
             attachEventListeners() {
@@ -1310,6 +1627,103 @@
                 const validPages = ['dashboard', 'generator', 'request'];
                 const initialPage = validPages.includes(initialHash) ? initialHash : 'dashboard';
                 this.switchPage(`${initialPage}-page`);
+                
+                // Load templates on dashboard
+                if (initialPage === 'dashboard') {
+                    this.loadTemplateGrid();
+                }
+            },
+
+            // --- TEMPLATE SYSTEM METHODS ---
+            loadTemplateGrid() {
+                const templateGrid = document.getElementById('template-grid');
+                if (!templateGrid) return;
+
+                const templates = QuoteTemplates.getAllTemplates();
+                
+                templateGrid.innerHTML = templates.map(template => `
+                    <div class="template-card bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer transform hover:scale-105"
+                         onclick="App.applyTemplate('${template.id}')">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-2xl">${template.icon}</div>
+                            <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">Template</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 text-sm mb-2">${template.name}</h4>
+                        <p class="text-xs text-gray-600 mb-3">${template.description}</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span>${template.data.shipmentDetails.pol}</span>
+                            <span>→</span>
+                            <span>${template.data.shipmentDetails.pod}</span>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-gray-100">
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>Rate: $${template.data.originCharges.ratePerKg}/kg</span>
+                                <span>Duty: ${template.data.landedCost.dutyRate}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                console.log('✅ Template grid loaded with', templates.length, 'templates');
+            },
+
+            applyTemplate(templateId) {
+                console.log('🎯 Applying template:', templateId);
+                
+                const success = QuoteTemplates.applyTemplate(templateId);
+                
+                if (success) {
+                    // Switch to cost generator page
+                    this.switchPage('cost-generator-page');
+                    
+                    // Regenerate all inputs with new data
+                    this.generateInputs();
+                    
+                    // Update commercial value calculation
+                    setTimeout(() => {
+                        if (window.updateCommercialValue) {
+                            updateCommercialValue();
+                        }
+                        this.updateDisplay();
+                    }, 100);
+                    
+                    const template = QuoteTemplates.getTemplate(templateId);
+                    showToast(`Template "${template.name}" applied successfully! 🎉`, 'success');
+                    
+                    console.log('✅ Template applied and page updated');
+                } else {
+                    showToast('Failed to apply template', 'error');
+                    console.error('❌ Failed to apply template:', templateId);
+                }
+            },
+
+            showAllTemplates() {
+                // For now, scroll to templates section. Later we can add a modal
+                const templateGrid = document.getElementById('template-grid');
+                if (templateGrid) {
+                    templateGrid.scrollIntoView({ behavior: 'smooth' });
+                    showToast('All templates are shown below 👇', 'info');
+                }
+            },
+
+            // --- ENHANCED QUOTE FILTERING METHODS ---
+            filterQuotes(searchTerm = '') {
+                const searchInput = document.getElementById('quote-search');
+                const filterSelect = document.getElementById('quote-filter');
+                
+                const search = searchTerm || (searchInput ? searchInput.value : '');
+                const filter = filterSelect ? filterSelect.value : '';
+                
+                console.log('🔍 Filtering quotes:', { search, filter });
+                
+                // This will be implemented when we have quotes to filter
+                // For now, just show that the feature is working
+                if (search) {
+                    showToast(`Searching for: "${search}"`, 'info');
+                }
+                if (filter) {
+                    showToast(`Filtering by: ${filter}`, 'info');
+                }
             },
             
             getCurrentData(fullState = false) { 
