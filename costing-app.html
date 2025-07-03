@@ -563,7 +563,16 @@
                 commodity: { label: 'Commodity', value: 'General Goods', type: 'text' }, 
                 incoterm: { label: 'Incoterm', value: 'FOB', type: 'select', options: ['EXW', 'FOB', 'CFR', 'CIF', 'DAP', 'DDP'] } 
             }, 
-            exchangeRates: { usd: { label: 'USD to ZAR', value: '18.50' }, eur: { label: 'EUR to ZAR', value: '20.20' }, gbp: { label: 'GBP to ZAR', value: '23.50' } }, 
+            exchangeRates: { 
+                usd: { label: 'USD to ZAR', value: '18.50' }, 
+                eur: { label: 'EUR to ZAR', value: '20.20' }, 
+                gbp: { label: 'GBP to ZAR', value: '23.50' } 
+            },
+            currencyAmounts: {
+                usdAmount: { label: 'USD Amount', value: '1000', type: 'number' },
+                eurAmount: { label: 'EUR Amount', value: '1000', type: 'number' },
+                gbpAmount: { label: 'GBP Amount', value: '1000', type: 'number' }
+            }, 
             costs: { 
                 freight: { title: 'Freight costs', currencyOptions: ['USD', 'EUR', 'GBP'], items: { seaFreight: { label: 'Sea Freight', value: '2500', currency: 'usd' }, peakSeasonSurcharge: { label: 'Peak Season Surcharge', value: '0', currency: 'usd' }, bunkerSurcharge: { label: 'Bunker Surcharge', value: '300', currency: 'usd' }, adminFee: { label: 'Admin Fee', value: '50', currency: 'usd' } } }, 
                 origin: { title: 'Origin charges', currencyOptions: ['USD', 'EUR', 'GBP'], items: { thc: { label: 'THC', value: '150', currency: 'usd' }, documentation: { label: 'Documentation', value: '75', currency: 'usd' }, cartage: { label: 'Cartage', value: '0', currency: 'usd' }, exportCustoms: { label: 'Export Customs', value: '100', currency: 'usd' } } }, 
@@ -871,11 +880,77 @@
             updateExchangeRatesDisplay() {
                 const container = document.getElementById('exchange-rates');
                 if (container) {
-                    // Clear and regenerate exchange rates inputs
+                    // Clear and regenerate exchange rates section
                     container.innerHTML = '';
-                    Object.entries(state.exchangeRates).forEach(([key, rate]) => {
-                        const input = this.createInput(key, rate, 'exchangeRates');
-                        container.appendChild(input);
+                    container.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+                    
+                    // Create currency blocks for USD, EUR, GBP
+                    const currencies = [
+                        { code: 'USD', rateKey: 'usd', amountKey: 'usdAmount', symbol: '$', flag: '🇺🇸' },
+                        { code: 'EUR', rateKey: 'eur', amountKey: 'eurAmount', symbol: '€', flag: '🇪🇺' },
+                        { code: 'GBP', rateKey: 'gbp', amountKey: 'gbpAmount', symbol: '£', flag: '🇬🇧' }
+                    ];
+
+                    currencies.forEach(currency => {
+                        const rate = state.exchangeRates[currency.rateKey];
+                        const amount = state.currencyAmounts[currency.amountKey];
+                        
+                        // Calculate ZAR equivalent
+                        const zarEquivalent = (parseFloat(amount.value) * parseFloat(rate.value)).toFixed(2);
+                        
+                        const currencyBlock = document.createElement('div');
+                        currencyBlock.className = 'bg-white border border-gray-200 rounded-lg p-4 shadow-sm';
+                        currencyBlock.innerHTML = `
+                            <div class="text-center mb-3">
+                                <div class="text-lg font-semibold text-gray-800">
+                                    ${currency.flag} ${currency.code}
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <!-- Exchange Rate -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                                        Exchange Rate (${currency.code} to ZAR)
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        step="0.01" 
+                                        value="${rate.value}"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50"
+                                        onchange="App.updateExchangeRate('${currency.rateKey}', this.value)"
+                                        readonly
+                                    >
+                                </div>
+                                
+                                <!-- Currency Amount -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                                        ${currency.code} Amount
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        step="0.01" 
+                                        value="${amount.value}"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        onchange="App.updateCurrencyAmount('${currency.amountKey}', this.value)"
+                                        placeholder="Enter ${currency.code} amount"
+                                    >
+                                </div>
+                                
+                                <!-- ZAR Equivalent -->
+                                <div class="bg-green-50 border border-green-200 rounded-md p-2">
+                                    <div class="text-xs font-medium text-green-700 mb-1">ZAR Equivalent</div>
+                                    <div class="text-lg font-bold text-green-800">
+                                        R ${formatCurrency(zarEquivalent, 'ZAR').replace('ZAR', '').trim()}
+                                    </div>
+                                    <div class="text-xs text-green-600">
+                                        ${currency.symbol}${amount.value} × ${rate.value}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(currencyBlock);
                     });
                     
                     // Add last updated info and refresh button
@@ -913,6 +988,18 @@
                     console.error('Failed to refresh exchange rates:', error);
                     showToast('Failed to refresh rates', 'error');
                 }
+            },
+
+            updateCurrencyAmount(amountKey, value) {
+                state.currencyAmounts[amountKey].value = value;
+                this.updateExchangeRatesDisplay(); // Refresh to show new ZAR calculations
+                this.updateDisplay(); // Update any cost calculations that might use these amounts
+            },
+
+            updateExchangeRate(rateKey, value) {
+                state.exchangeRates[rateKey].value = value;
+                this.updateExchangeRatesDisplay(); // Refresh to show new ZAR calculations
+                this.updateDisplay(); // Recalculate all costs with new rate
             },
 
             async initFirebase() {
