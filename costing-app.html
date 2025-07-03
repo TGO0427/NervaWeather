@@ -859,12 +859,31 @@
             });
             
             if (ratePerKgEl && totalKgEl && commercialValueEl) {
-                const ratePerKg = parseFloat(ratePerKgEl.value) || 0;
-                const totalKg = parseFloat(totalKgEl.value) || 0;
+                const ratePerKg = ratePerKgEl.value;
+                const totalKg = totalKgEl.value;
                 const currency = ratePerKgCurrencyEl ? ratePerKgCurrencyEl.value : 'usd';
                 
+                // Validate Origin Charges inputs
+                const validation = ValidationUtil.validateOriginCharges(ratePerKg, totalKg);
+                
+                if (!validation.isValid) {
+                    // Show validation errors with visual feedback
+                    if (parseFloat(ratePerKg) <= 0 || isNaN(parseFloat(ratePerKg))) {
+                        ValidationUtil.showValidationError('Rate per Kg must be a positive number', ratePerKgEl);
+                    }
+                    if (parseFloat(totalKg) <= 0 || isNaN(parseFloat(totalKg))) {
+                        ValidationUtil.showValidationError('Total Kg must be a positive number', totalKgEl);
+                    }
+                    console.log('❌ Validation failed:', validation.message);
+                    return false;
+                }
+                
+                // Clear any previous validation errors
+                ValidationUtil.clearValidationError(ratePerKgEl);
+                ValidationUtil.clearValidationError(totalKgEl);
+                
                 // Calculate total value
-                const totalValue = ratePerKg * totalKg;
+                const totalValue = parseFloat(ratePerKg) * parseFloat(totalKg);
                 
                 console.log(`💰 Calculation: ${ratePerKg} × ${totalKg} = ${totalValue} ${currency.toUpperCase()}`);
                 
@@ -882,13 +901,123 @@
                 }
                 
                 console.log('✅ Commercial value updated to:', totalValue.toFixed(2));
+                return true;
             } else {
                 console.log('❌ Required elements not found for calculation');
+                return false;
             }
         }
         
         // Make function globally available
         window.updateCommercialValue = updateCommercialValue;
+
+        // --- INPUT VALIDATION UTILITY ---
+        const ValidationUtil = {
+            // Exchange rate validation bounds (reasonable ranges for major currencies to ZAR)
+            exchangeRateLimits: {
+                usd: { min: 10, max: 25, name: 'USD to ZAR' },
+                eur: { min: 12, max: 30, name: 'EUR to ZAR' },
+                gbp: { min: 15, max: 35, name: 'GBP to ZAR' }
+            },
+            
+            validateExchangeRate(rateKey, value) {
+                const numValue = parseFloat(value);
+                const limits = this.exchangeRateLimits[rateKey];
+                
+                if (!limits) return { isValid: true, message: '' };
+                
+                if (isNaN(numValue) || numValue <= 0) {
+                    return { 
+                        isValid: false, 
+                        message: `${limits.name} rate must be a positive number` 
+                    };
+                }
+                
+                if (numValue < limits.min || numValue > limits.max) {
+                    return { 
+                        isValid: false, 
+                        message: `${limits.name} rate should be between ${limits.min} and ${limits.max}. Current value (${numValue}) seems unusual.` 
+                    };
+                }
+                
+                return { isValid: true, message: '' };
+            },
+            
+            validateCurrencyAmount(value) {
+                const numValue = parseFloat(value);
+                
+                if (isNaN(numValue)) {
+                    return { 
+                        isValid: false, 
+                        message: 'Amount must be a valid number' 
+                    };
+                }
+                
+                if (numValue < 0) {
+                    return { 
+                        isValid: false, 
+                        message: 'Amount cannot be negative' 
+                    };
+                }
+                
+                if (numValue > 10000000) { // 10 million limit
+                    return { 
+                        isValid: false, 
+                        message: 'Amount seems unusually large. Please verify.' 
+                    };
+                }
+                
+                return { isValid: true, message: '' };
+            },
+            
+            validateOriginCharges(ratePerKg, totalKg) {
+                const rate = parseFloat(ratePerKg);
+                const kg = parseFloat(totalKg);
+                
+                const errors = [];
+                
+                if (isNaN(rate) || rate <= 0) {
+                    errors.push('Rate per Kg must be a positive number');
+                }
+                
+                if (isNaN(kg) || kg <= 0) {
+                    errors.push('Total Kg must be a positive number');
+                }
+                
+                if (rate > 0 && rate < 0.01) {
+                    errors.push('Rate per Kg seems too low (less than $0.01)');
+                }
+                
+                if (rate > 1000) {
+                    errors.push('Rate per Kg seems unusually high (over $1000)');
+                }
+                
+                if (kg > 50000) {
+                    errors.push('Total Kg seems unusually high (over 50,000kg)');
+                }
+                
+                return {
+                    isValid: errors.length === 0,
+                    message: errors.join('. ')
+                };
+            },
+            
+            showValidationError(message, element = null) {
+                if (element) {
+                    element.style.borderColor = '#ef4444';
+                    element.style.backgroundColor = '#fef2f2';
+                }
+                showToast(message, 'error');
+                console.warn('⚠️ Validation Error:', message);
+            },
+            
+            clearValidationError(element) {
+                if (element) {
+                    element.style.borderColor = '';
+                    element.style.backgroundColor = '';
+                }
+            }
+        };
 
         // --- CORE APP LOGIC ---
         const App = {
@@ -1004,7 +1133,7 @@
                                         step="0.01" 
                                         value="${rate.value}"
                                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50"
-                                        onchange="App.updateExchangeRate('${currency.rateKey}', this.value)"
+                                        onchange="App.updateExchangeRate('${currency.rateKey}', this.value, this)"
                                         readonly
                                     >
                                 </div>
@@ -1019,7 +1148,7 @@
                                         step="0.01" 
                                         value="${amount.value}"
                                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        onchange="App.updateCurrencyAmount('${currency.amountKey}', this.value)"
+                                        onchange="App.updateCurrencyAmount('${currency.amountKey}', this.value, this)"
                                         placeholder="Enter ${currency.code} amount"
                                     >
                                 </div>
@@ -1076,16 +1205,38 @@
                 }
             },
 
-            updateCurrencyAmount(amountKey, value) {
+            updateCurrencyAmount(amountKey, value, element = null) {
+                const validation = ValidationUtil.validateCurrencyAmount(value);
+                
+                if (!validation.isValid) {
+                    ValidationUtil.showValidationError(validation.message, element);
+                    return false; // Don't update if invalid
+                }
+                
+                // Clear any previous validation errors
+                if (element) ValidationUtil.clearValidationError(element);
+                
                 state.currencyAmounts[amountKey].value = value;
                 this.updateExchangeRatesDisplay(); // Refresh to show new ZAR calculations
                 this.updateDisplay(); // Update any cost calculations that might use these amounts
+                return true;
             },
 
-            updateExchangeRate(rateKey, value) {
+            updateExchangeRate(rateKey, value, element = null) {
+                const validation = ValidationUtil.validateExchangeRate(rateKey, value);
+                
+                if (!validation.isValid) {
+                    ValidationUtil.showValidationError(validation.message, element);
+                    return false; // Don't update if invalid
+                }
+                
+                // Clear any previous validation errors
+                if (element) ValidationUtil.clearValidationError(element);
+                
                 state.exchangeRates[rateKey].value = value;
                 this.updateExchangeRatesDisplay(); // Refresh to show new ZAR calculations
                 this.updateDisplay(); // Recalculate all costs with new rate
+                return true;
             },
 
             async initFirebase() {
