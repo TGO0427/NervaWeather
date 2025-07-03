@@ -844,11 +844,19 @@
 
         // --- AUTO-CALCULATION FUNCTION ---
         function updateCommercialValue() {
+            console.log('🔄 updateCommercialValue called');
             const ratePerKgEl = document.getElementById('origin-ratePerKg-value');
             const totalKgEl = document.getElementById('origin-totalKg-value');
             const ratePerKgCurrencyEl = document.getElementById('origin-ratePerKg-currency');
             const commercialValueEl = document.getElementById('lc-commercialInvoiceValue');
             const landedTotalKgEl = document.getElementById('lc-totalKg');
+            
+            console.log('Elements found:', {
+                ratePerKg: !!ratePerKgEl,
+                totalKg: !!totalKgEl,
+                commercialValue: !!commercialValueEl,
+                landedTotalKg: !!landedTotalKgEl
+            });
             
             if (ratePerKgEl && totalKgEl && commercialValueEl) {
                 const ratePerKg = parseFloat(ratePerKgEl.value) || 0;
@@ -857,6 +865,8 @@
                 
                 // Calculate total value
                 const totalValue = ratePerKg * totalKg;
+                
+                console.log(`💰 Calculation: ${ratePerKg} × ${totalKg} = ${totalValue} ${currency.toUpperCase()}`);
                 
                 // Update commercial invoice value (always in USD for landed cost calculation)
                 commercialValueEl.value = totalValue.toFixed(2);
@@ -870,8 +880,15 @@
                 if (window.App && App.updateDisplay) {
                     App.updateDisplay();
                 }
+                
+                console.log('✅ Commercial value updated to:', totalValue.toFixed(2));
+            } else {
+                console.log('❌ Required elements not found for calculation');
             }
         }
+        
+        // Make function globally available
+        window.updateCommercialValue = updateCommercialValue;
 
         // --- CORE APP LOGIC ---
         const App = {
@@ -1510,6 +1527,13 @@
                                 }).join('');
                                 originContainer.innerHTML = originFieldsHtml;
                                 console.log('✅ Origin charges section generated successfully');
+                                
+                                // Initialize commercial value calculation
+                                setTimeout(() => {
+                                    if (window.updateCommercialValue) {
+                                        updateCommercialValue();
+                                    }
+                                }, 100);
                             } catch (error) {
                                 console.error('❌ Error generating origin charges:', error);
                                 originContainer.innerHTML = '<div class="text-red-500 p-4">Error loading origin charges section</div>';
