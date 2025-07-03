@@ -578,9 +578,17 @@
         // --- EXCHANGE RATE SERVICE ---
         class ExchangeRateService {
             constructor() {
-                this.baseUrls = [
-                    'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies',
-                    'https://api.exchangerate-api.com/v4/latest'
+                this.apis = [
+                    {
+                        name: 'ExchangeRate-API',
+                        url: 'https://api.exchangerate-api.com/v4/latest',
+                        parseResponse: (data, toCurrency) => data.rates?.[toCurrency.toUpperCase()]
+                    },
+                    {
+                        name: 'Fixer-Backup', 
+                        url: 'https://api.fixer.io/latest',
+                        parseResponse: (data, toCurrency) => data.rates?.[toCurrency.toUpperCase()]
+                    }
                 ];
                 this.cacheKey = 'exchange_rates_cache';
                 this.timestampKey = 'exchange_rates_timestamp';
@@ -589,54 +597,93 @@
             }
 
             async fetchRate(fromCurrency, toCurrency) {
-                try {
-                    // Try Fawaz Ahmed's API first (no API key required)
-                    const url = `${this.baseUrls[0]}/${fromCurrency.toLowerCase()}/${toCurrency.toLowerCase()}.json`;
-                    const response = await fetch(url);
-                    
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    
-                    const data = await response.json();
-                    const rate = data[toCurrency.toLowerCase()] || data.zar;
-                    
-                    if (!rate) throw new Error('Rate not found in response');
-                    
-                    return parseFloat(rate) * this.spotMultiplier;
-                } catch (error) {
-                    console.warn(`Failed to fetch ${fromCurrency}/${toCurrency} rate:`, error);
-                    return null;
+                // Try each API in order until one works
+                for (const api of this.apis) {
+                    try {
+                        console.log(`Trying ${api.name} for ${fromCurrency}/${toCurrency}`);
+                        const url = `${api.url}/${fromCurrency.toUpperCase()}`;
+                        const response = await fetch(url);
+                        
+                        if (!response.ok) {
+                            console.warn(`${api.name} returned ${response.status}`);
+                            continue;
+                        }
+                        
+                        const data = await response.json();
+                        const rate = api.parseResponse(data, toCurrency);
+                        
+                        if (!rate || isNaN(rate)) {
+                            console.warn(`${api.name} - Rate not found or invalid:`, rate);
+                            continue;
+                        }
+                        
+                        const finalRate = parseFloat(rate) * this.spotMultiplier;
+                        console.log(`${api.name} - ${fromCurrency}/${toCurrency}: ${rate} -> ${finalRate} (spot x 2)`);
+                        return finalRate;
+                        
+                    } catch (error) {
+                        console.warn(`${api.name} failed:`, error.message);
+                        continue;
+                    }
                 }
+                
+                console.error(`All APIs failed for ${fromCurrency}/${toCurrency}`);
+                return null;
             }
 
             async fetchAllRates() {
                 try {
-                    showToast('Updating exchange rates...', 'info');
+                    showToast('Fetching live exchange rates...', 'info');
+                    console.log('Starting exchange rate fetch...');
                     
-                    const [usdRate, eurRate, gbpRate] = await Promise.all([
-                        this.fetchRate('USD', 'ZAR'),
-                        this.fetchRate('EUR', 'ZAR'),
-                        this.fetchRate('GBP', 'ZAR')
-                    ]);
+                    // Fetch rates sequentially to better handle errors
+                    const usdRate = await this.fetchRate('USD', 'ZAR');
+                    const eurRate = await this.fetchRate('EUR', 'ZAR'); 
+                    const gbpRate = await this.fetchRate('GBP', 'ZAR');
 
-                    if (usdRate && eurRate && gbpRate) {
-                        const rates = {
-                            usd: { label: 'USD to ZAR', value: usdRate.toFixed(2) },
-                            eur: { label: 'EUR to ZAR', value: eurRate.toFixed(2) },
-                            gbp: { label: 'GBP to ZAR', value: gbpRate.toFixed(2) }
-                        };
+                    console.log('Fetched rates:', { usdRate, eurRate, gbpRate });
 
-                        // Cache the rates and timestamp
-                        localStorage.setItem(this.cacheKey, JSON.stringify(rates));
-                        localStorage.setItem(this.timestampKey, Date.now().toString());
-
-                        showToast('Exchange rates updated successfully! (Spot x 2)', 'success');
-                        return rates;
-                    } else {
-                        throw new Error('Failed to fetch one or more rates');
+                    // Check if we got at least some rates
+                    const successfulRates = [usdRate, eurRate, gbpRate].filter(rate => rate !== null);
+                    
+                    if (successfulRates.length === 0) {
+                        throw new Error('All exchange rate APIs failed');
                     }
+
+                    // Use fetched rates or fallback to cached/default for failed ones
+                    const cachedRates = this.getCachedRates();
+                    const rates = {
+                        usd: { 
+                            label: 'USD to ZAR', 
+                            value: usdRate ? usdRate.toFixed(2) : cachedRates.usd.value 
+                        },
+                        eur: { 
+                            label: 'EUR to ZAR', 
+                            value: eurRate ? eurRate.toFixed(2) : cachedRates.eur.value 
+                        },
+                        gbp: { 
+                            label: 'GBP to ZAR', 
+                            value: gbpRate ? gbpRate.toFixed(2) : cachedRates.gbp.value 
+                        }
+                    };
+
+                    // Cache the rates and timestamp
+                    localStorage.setItem(this.cacheKey, JSON.stringify(rates));
+                    localStorage.setItem(this.timestampKey, Date.now().toString());
+
+                    const successCount = successfulRates.length;
+                    if (successCount === 3) {
+                        showToast('Exchange rates updated successfully! (Spot × 2)', 'success');
+                    } else {
+                        showToast(`Partial update: ${successCount}/3 rates fetched (Spot × 2)`, 'warning');
+                    }
+                    
+                    console.log('Final rates:', rates);
+                    return rates;
+                    
                 } catch (error) {
                     console.error('Failed to fetch exchange rates:', error);
-                    showToast('Failed to update exchange rates, using cached/default values', 'warning');
+                    showToast('API connection failed - using cached/default rates', 'error');
                     return this.getCachedRates();
                 }
             }
@@ -645,16 +692,27 @@
                 try {
                     const cached = localStorage.getItem(this.cacheKey);
                     if (cached) {
-                        return JSON.parse(cached);
+                        const parsedRates = JSON.parse(cached);
+                        
+                        // Validate cache structure
+                        if (parsedRates.usd?.value && parsedRates.eur?.value && parsedRates.gbp?.value) {
+                            console.log('Using valid cached rates:', parsedRates);
+                            return parsedRates;
+                        } else {
+                            console.warn('Cached rates structure is invalid:', parsedRates);
+                            localStorage.removeItem(this.cacheKey);
+                        }
                     }
                 } catch (error) {
                     console.warn('Failed to parse cached rates:', error);
+                    localStorage.removeItem(this.cacheKey);
                 }
                 
                 // Fallback to default rates (current hardcoded values)
+                console.log('Using fallback default rates');
                 return {
                     usd: { label: 'USD to ZAR', value: '18.50' },
-                    eur: { label: 'EUR to ZAR', value: '20.20' },
+                    eur: { label: 'EUR to ZAR', value: '20.20' }, 
                     gbp: { label: 'GBP to ZAR', value: '23.50' }
                 };
             }
@@ -822,16 +880,24 @@
                     
                     // Add last updated info and refresh button
                     const lastUpdate = exchangeRateService.getLastUpdateTime();
+                    const isExpired = exchangeRateService.isCacheExpired();
                     const infoDiv = document.createElement('div');
                     infoDiv.className = 'col-span-full text-sm text-gray-600 border-t pt-3 mt-3';
                     infoDiv.innerHTML = `
                         <div class="flex items-center justify-between">
-                            <span>Last updated: ${lastUpdate}</span>
+                            <div>
+                                <div>Last updated: ${lastUpdate}</div>
+                                <div class="text-xs ${isExpired ? 'text-yellow-600' : 'text-green-600'}">
+                                    ${isExpired ? '⚠️ Rates may be outdated' : '✅ Rates are current'}
+                                </div>
+                            </div>
                             <button onclick="App.refreshExchangeRates()" class="btn text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
                                 🔄 Refresh Rates
                             </button>
                         </div>
-                        <div class="text-xs text-gray-500 mt-1">Rates are spot price × 2 and update daily</div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            Rates are live spot price × 2 | Source: ExchangeRate-API
+                        </div>
                     `;
                     container.appendChild(infoDiv);
                 }
