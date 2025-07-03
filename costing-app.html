@@ -575,6 +575,129 @@
         };
         const VAT_RATE = 0.15;
 
+        // --- EXCHANGE RATE SERVICE ---
+        class ExchangeRateService {
+            constructor() {
+                this.baseUrls = [
+                    'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies',
+                    'https://api.exchangerate-api.com/v4/latest'
+                ];
+                this.cacheKey = 'exchange_rates_cache';
+                this.timestampKey = 'exchange_rates_timestamp';
+                this.cacheValidityHours = 24;
+                this.spotMultiplier = 2; // spot x 2
+            }
+
+            async fetchRate(fromCurrency, toCurrency) {
+                try {
+                    // Try Fawaz Ahmed's API first (no API key required)
+                    const url = `${this.baseUrls[0]}/${fromCurrency.toLowerCase()}/${toCurrency.toLowerCase()}.json`;
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const data = await response.json();
+                    const rate = data[toCurrency.toLowerCase()] || data.zar;
+                    
+                    if (!rate) throw new Error('Rate not found in response');
+                    
+                    return parseFloat(rate) * this.spotMultiplier;
+                } catch (error) {
+                    console.warn(`Failed to fetch ${fromCurrency}/${toCurrency} rate:`, error);
+                    return null;
+                }
+            }
+
+            async fetchAllRates() {
+                try {
+                    showToast('Updating exchange rates...', 'info');
+                    
+                    const [usdRate, eurRate, gbpRate] = await Promise.all([
+                        this.fetchRate('USD', 'ZAR'),
+                        this.fetchRate('EUR', 'ZAR'),
+                        this.fetchRate('GBP', 'ZAR')
+                    ]);
+
+                    if (usdRate && eurRate && gbpRate) {
+                        const rates = {
+                            usd: { label: 'USD to ZAR', value: usdRate.toFixed(2) },
+                            eur: { label: 'EUR to ZAR', value: eurRate.toFixed(2) },
+                            gbp: { label: 'GBP to ZAR', value: gbpRate.toFixed(2) }
+                        };
+
+                        // Cache the rates and timestamp
+                        localStorage.setItem(this.cacheKey, JSON.stringify(rates));
+                        localStorage.setItem(this.timestampKey, Date.now().toString());
+
+                        showToast('Exchange rates updated successfully! (Spot x 2)', 'success');
+                        return rates;
+                    } else {
+                        throw new Error('Failed to fetch one or more rates');
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch exchange rates:', error);
+                    showToast('Failed to update exchange rates, using cached/default values', 'warning');
+                    return this.getCachedRates();
+                }
+            }
+
+            getCachedRates() {
+                try {
+                    const cached = localStorage.getItem(this.cacheKey);
+                    if (cached) {
+                        return JSON.parse(cached);
+                    }
+                } catch (error) {
+                    console.warn('Failed to parse cached rates:', error);
+                }
+                
+                // Fallback to default rates (current hardcoded values)
+                return {
+                    usd: { label: 'USD to ZAR', value: '18.50' },
+                    eur: { label: 'EUR to ZAR', value: '20.20' },
+                    gbp: { label: 'GBP to ZAR', value: '23.50' }
+                };
+            }
+
+            isCacheExpired() {
+                const timestamp = localStorage.getItem(this.timestampKey);
+                if (!timestamp) return true;
+
+                const cacheTime = parseInt(timestamp);
+                const now = Date.now();
+                const hoursSinceCache = (now - cacheTime) / (1000 * 60 * 60);
+
+                return hoursSinceCache >= this.cacheValidityHours;
+            }
+
+            getLastUpdateTime() {
+                const timestamp = localStorage.getItem(this.timestampKey);
+                if (!timestamp) return 'Never';
+
+                const date = new Date(parseInt(timestamp));
+                return date.toLocaleString('en-ZA', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            async initializeRates() {
+                if (this.isCacheExpired()) {
+                    return await this.fetchAllRates();
+                } else {
+                    const cached = this.getCachedRates();
+                    showToast(`Using cached rates (Last updated: ${this.getLastUpdateTime()})`, 'info');
+                    return cached;
+                }
+            }
+        }
+
+        // Initialize Exchange Rate Service
+        const exchangeRateService = new ExchangeRateService();
+
         // --- UTILITY FUNCTIONS ---
         const formatCurrency = (value, currency = 'ZAR') => new Intl.NumberFormat('en-ZA', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(parseFloat(value) || 0);
 
@@ -660,6 +783,7 @@
 
             async init() {
                 await this.initFirebase(); 
+                await this.initExchangeRates();
                 this.generateInputs();
                 this.updateDisplay();
                 this.attachEventListeners();
@@ -670,6 +794,58 @@
                 } else {
                     // Fallback to local storage when Firebase is not available
                     this.loadLocalQuotes();
+                }
+            },
+
+            async initExchangeRates() {
+                try {
+                    const rates = await exchangeRateService.initializeRates();
+                    state.exchangeRates = rates;
+                    
+                    // Update the display if exchange rates section is visible
+                    this.updateExchangeRatesDisplay();
+                } catch (error) {
+                    console.error('Failed to initialize exchange rates:', error);
+                    showToast('Using default exchange rates', 'warning');
+                }
+            },
+
+            updateExchangeRatesDisplay() {
+                const container = document.getElementById('exchange-rates');
+                if (container) {
+                    // Clear and regenerate exchange rates inputs
+                    container.innerHTML = '';
+                    Object.entries(state.exchangeRates).forEach(([key, rate]) => {
+                        const input = this.createInput(key, rate, 'exchangeRates');
+                        container.appendChild(input);
+                    });
+                    
+                    // Add last updated info and refresh button
+                    const lastUpdate = exchangeRateService.getLastUpdateTime();
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'col-span-full text-sm text-gray-600 border-t pt-3 mt-3';
+                    infoDiv.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span>Last updated: ${lastUpdate}</span>
+                            <button onclick="App.refreshExchangeRates()" class="btn text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                                🔄 Refresh Rates
+                            </button>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Rates are spot price × 2 and update daily</div>
+                    `;
+                    container.appendChild(infoDiv);
+                }
+            },
+
+            async refreshExchangeRates() {
+                try {
+                    const rates = await exchangeRateService.fetchAllRates();
+                    state.exchangeRates = rates;
+                    this.updateExchangeRatesDisplay();
+                    this.updateDisplay(); // Recalculate all costs with new rates
+                } catch (error) {
+                    console.error('Failed to refresh exchange rates:', error);
+                    showToast('Failed to refresh rates', 'error');
                 }
             },
 
