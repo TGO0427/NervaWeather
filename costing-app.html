@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synercore - Costing Platform (Auto-Deploy)</title>
+    <title>Nerva ERP - Universal Costing Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" xintegrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,6 +45,30 @@
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        /* Nerva ERP Navigation Styling */
+        .nerva-nav-item {
+            transition: all 0.2s ease;
+            border-radius: 6px;
+        }
+        .nerva-nav-item:hover {
+            background-color: #f3f4f6;
+            transform: translateX(2px);
+        }
+        .nerva-nav-item.active {
+            background-color: #e0e7ff;
+            color: #4338ca;
+            font-weight: 600;
+        }
+        .nerva-nav-item svg {
+            transition: color 0.2s ease;
+        }
+        .nerva-nav-item:hover svg {
+            color: #6b7280;
+        }
+        .nerva-nav-item.active svg {
+            color: #4338ca;
         }
         
         .page { display: none; }
@@ -442,27 +466,297 @@
 </head>
 <body class="bg-gray-100">
 
+    <!-- Welcome/Login Overlay -->
+    <div id="auth-overlay" class="fixed inset-0 z-50 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black opacity-20"></div>
+        
+        <!-- Animated Background -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+            <div class="absolute top-0 right-1/4 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
+            <div class="absolute bottom-0 left-1/3 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+        </div>
+
+        <!-- Auth Container -->
+        <div class="relative z-10 w-full max-w-6xl mx-auto px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                
+                <!-- Welcome Section -->
+                <div class="text-white space-y-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl flex items-center justify-center">
+                                <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M9 1L5 3l4 2 4-2-4-2z" />
+                                </svg>
+                            </div>
+                            <h1 class="text-4xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                                Nerva ERP
+                            </h1>
+                        </div>
+                        <h2 class="text-3xl font-bold leading-tight">
+                            The Ultimate <span class="text-blue-300">Shipping & Logistics</span> Platform
+                        </h2>
+                        <p class="text-xl text-blue-100 leading-relaxed">
+                            Complete cost calculation, live vessel schedules, shipment tracking, and quote management - all in one powerful platform.
+                        </p>
+                    </div>
+
+                    <!-- Features Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                        <div class="flex items-center space-x-3 p-3 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm">
+                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <span class="font-medium">Smart Cost Calculator</span>
+                        </div>
+                        <div class="flex items-center space-x-3 p-3 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 012 0v4h4V3a1 1 0 012 0v4h2a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2z" />
+                                </svg>
+                            </div>
+                            <span class="font-medium">Live Vessel Schedules</span>
+                        </div>
+                        <div class="flex items-center space-x-3 p-3 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm">
+                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                </svg>
+                            </div>
+                            <span class="font-medium">Real-Time Tracking</span>
+                        </div>
+                        <div class="flex items-center space-x-3 p-3 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm">
+                            <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                </svg>
+                            </div>
+                            <span class="font-medium">Advanced Analytics</span>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-3 gap-6 mt-8 p-6 rounded-xl bg-white bg-opacity-10 backdrop-blur-sm">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-300">25+</div>
+                            <div class="text-sm text-blue-100">Shipping Lines</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-300">11K+</div>
+                            <div class="text-sm text-blue-100">HS Codes</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-purple-300">Live</div>
+                            <div class="text-sm text-blue-100">Updates</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Login Section -->
+                <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-auto w-full">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h3>
+                        <p class="text-gray-600">Sign in to access your dashboard</p>
+                    </div>
+
+                    <!-- Auth Tabs -->
+                    <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
+                        <button id="login-tab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors bg-white text-blue-600 shadow-sm">
+                            Sign In
+                        </button>
+                        <button id="register-tab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors text-gray-500 hover:text-gray-700">
+                            Sign Up
+                        </button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="login-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="login-email" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                   placeholder="your@email.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" id="login-password" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                   placeholder="••••••••">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                            </label>
+                            <button type="button" class="text-sm text-blue-600 hover:text-blue-800">
+                                Forgot password?
+                            </button>
+                        </div>
+                        <button type="submit" id="login-btn" 
+                                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Sign In
+                        </button>
+                    </form>
+
+                    <!-- Register Form (Hidden by default) -->
+                    <form id="register-form" class="space-y-4" style="display: none;">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                <input type="text" id="register-firstname" required 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                       placeholder="John">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                <input type="text" id="register-lastname" required 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                       placeholder="Doe">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                            <input type="text" id="register-company" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                   placeholder="Your Company Ltd">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="register-email" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                   placeholder="your@email.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" id="register-password" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                   placeholder="••••••••">
+                        </div>
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" required class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-600">I agree to the Terms of Service and Privacy Policy</span>
+                            </label>
+                        </div>
+                        <button type="submit" id="register-btn" 
+                                class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 rounded-lg font-medium hover:from-green-700 hover:to-blue-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Create Account
+                        </button>
+                    </form>
+
+                    <!-- Social Login -->
+                    <div class="mt-6">
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-2 gap-3">
+                            <button type="button" id="google-login-btn" 
+                                    class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                Google
+                            </button>
+                            <button type="button" 
+                                    class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.098.119.112.223.083.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165C5.6 16.881 4.852 14.842 4.852 11.619c0-3.4 2.467-6.119 7.132-6.119 3.739 0 6.645 2.662 6.645 6.218 0 3.709-2.336 6.694-5.577 6.694-1.092 0-2.117-.568-2.463-1.245l-.669 2.551c-.24.921-.89 2.077-1.323 2.788C8.974 23.761 10.409 24.001 12.017 24.001 18.624 24.001 23.999 18.634 23.999 12.013 23.999 5.392 18.624.025 12.017.025z"/>
+                                </svg>
+                                Microsoft
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Demo Access -->
+                    <div class="mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                        <div class="text-center">
+                            <p class="text-sm text-orange-800 mb-2">🚀 Want to try it first?</p>
+                            <button id="demo-access-btn" 
+                                    class="text-sm bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all">
+                                Access Demo Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="flex h-screen bg-gray-200">
         <!-- Mobile Overlay -->
         <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
         
         <!-- Sidebar -->
-        <aside class="w-64 bg-gray-800 text-white flex flex-col">
-            <div class="flex items-center justify-center gap-x-3 p-4 border-b border-gray-700">
-                <img src="synercore-logo.png" alt="Synercore Logo" class="h-10 w-10 object-contain">
-                <span class="text-xl font-bold">Synercore</span>
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+            <!-- Nerva ERP Branding -->
+            <div class="flex items-center gap-x-3 p-4">
+                <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">N</span>
+                </div>
+                <span class="text-xl font-semibold text-gray-900">Nerva ERP</span>
             </div>
-            <nav id="sidebar-nav" class="flex-1 px-2 py-4 space-y-2">
-                <a href="#dashboard" data-page="dashboard-page" class="sidebar-link flex items-center px-4 py-2 rounded-md hover:bg-gray-700">
-                    <span class="text-lg">📊</span> Dashboard
+            
+            <!-- Main Navigation -->
+            <nav id="sidebar-nav" class="flex-1 px-3 py-4 space-y-1">
+                <a href="#dashboard" data-page="dashboard-page" class="nerva-nav-item group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                    <svg class="text-gray-400 mr-3 h-5 w-5 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v14H8V5z" />
+                    </svg>
+                    Dashboard
                 </a>
-                <a href="#generator" data-page="cost-generator-page" class="sidebar-link flex items-center px-4 py-2 rounded-md hover:bg-gray-700">
-                    <span class="text-lg">💰</span> Cost Generator
+                
+                <a href="#generator" data-page="cost-generator-page" class="nerva-nav-item group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                    <svg class="text-gray-400 mr-3 h-5 w-5 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M9 1L5 3l4 2 4-2-4-2z" />
+                    </svg>
+                    Cost Generator
                 </a>
-                <a href="#request" data-page="cost-request-page" class="sidebar-link flex items-center px-4 py-2 rounded-md hover:bg-gray-700">
-                    <span class="text-lg">📝</span> Cost Request
+                
+                <a href="#request" data-page="cost-request-page" class="nerva-nav-item group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                    <svg class="text-gray-400 mr-3 h-5 w-5 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    Cost Request
+                </a>
+                
+                <a href="#tracking" data-page="tracking-page" class="nerva-nav-item group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                    <svg class="text-gray-400 mr-3 h-5 w-5 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    Shipment Tracking
+                </a>
+                
+                <a href="#schedules" data-page="schedules-page" class="nerva-nav-item group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                    <svg class="text-gray-400 mr-3 h-5 w-5 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 012 0v4h4V3a1 1 0 012 0v4h2a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11H8v2h8v-2zM8 15h4v2H8v-2z" />
+                    </svg>
+                    Live Schedules
                 </a>
             </nav>
+            
+            <!-- Settings at Bottom -->
+            <div class="border-t border-gray-200 p-3">
+                <a href="#" class="nerva-nav-item group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                    <svg class="text-gray-400 mr-3 h-5 w-5 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Settings
+                </a>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -554,9 +848,9 @@
                             <div id="cost-sections"></div>
                         </div>
                         <div class="lg:col-span-1 space-y-6">
-                            <div class="bg-white p-4 rounded-lg shadow-sm sticky top-6"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Costing Summary</h3><div id="summary-output" class="space-y-2 text-sm"></div></div>
-                            <div class="bg-white p-4 rounded-lg shadow-sm" style="position:sticky; top: 24rem;"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Landed Cost Calculator</h3><div id="landed-cost-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="landed-cost-output" class="space-y-2 text-sm"></div></div>
-                            <div class="bg-white p-4 rounded-lg shadow-sm" style="position:sticky; top: 48rem;"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">💰 Pricing Strategy</h3><div id="pricing-strategy-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="pricing-strategy-output" class="space-y-2 text-sm"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Costing Summary</h3><div id="summary-output" class="space-y-2 text-sm"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Landed Cost Calculator</h3><div id="landed-cost-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="landed-cost-output" class="space-y-2 text-sm"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">💰 Pricing Strategy</h3><div id="pricing-strategy-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="pricing-strategy-output" class="space-y-2 text-sm"></div></div>
                             <div class="bg-white p-4 rounded-lg shadow-sm"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">📊 Cost Splitting</h3><div id="cost-splitting-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="cost-splitting-output" class="space-y-2 text-sm"></div></div>
                         </div>
                     </div>
@@ -588,6 +882,180 @@
                             <div><label class="block text-sm font-medium text-gray-700">Additional Notes or Special Instructions</label><textarea id="req-notes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm"></textarea></div>
                             <div class="text-right"><button type="submit" class="btn btn-primary text-white font-bold py-3 px-6 rounded-lg">📤 Submit Request</button></div>
                         </form>
+                    </div>
+                </div>
+
+                <!-- Shipment Tracking Page -->
+                <div id="tracking-page" class="page">
+                    <div class="max-w-7xl mx-auto space-y-6">
+                        <!-- Header -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">🚢 Shipment Tracking</h2>
+                            <p class="text-gray-600">Track your shipments across all major shipping lines in real-time</p>
+                        </div>
+
+                        <!-- Quick Track -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">Quick Track</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Shipping Line</label>
+                                    <select id="tracking-carrier" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                                        <option value="">Select Carrier</option>
+                                        <option value="msc">MSC</option>
+                                        <option value="maersk">Maersk</option>
+                                        <option value="cma-cgm">CMA CGM</option>
+                                        <option value="hapag-lloyd">Hapag-Lloyd</option>
+                                        <option value="cosco">COSCO</option>
+                                        <option value="evergreen">Evergreen</option>
+                                        <option value="oocl">OOCL</option>
+                                        <option value="yang-ming">Yang Ming</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Container/BL Number</label>
+                                    <input type="text" id="tracking-number" placeholder="Enter container or BL number" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                                </div>
+                                <div class="flex items-end">
+                                    <button id="track-shipment-btn" class="btn bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 w-full">
+                                        🔍 Track Shipment
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tracking Templates -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">Popular Routes & Templates</h3>
+                            <div id="tracking-templates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Templates will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Active Shipments -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">Active Shipments</h3>
+                            <div id="active-shipments" class="space-y-4">
+                                <!-- Active shipments will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Tracking Results -->
+                        <div id="tracking-results" class="bg-white p-6 rounded-lg shadow-sm" style="display: none;">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">Tracking Results</h3>
+                            <div id="tracking-details" class="space-y-4">
+                                <!-- Tracking details will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Vessel Schedules Page -->
+                <div id="schedules-page" class="page">
+                    <div class="max-w-7xl mx-auto space-y-6">
+                        <!-- Header -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">🚢 Live Vessel Schedules</h2>
+                            <p class="text-gray-600">Real-time sailing schedules from all major shipping lines worldwide</p>
+                        </div>
+
+                        <!-- Search Interface -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">Search Schedules</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">From Port</label>
+                                    <select id="schedule-origin" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                                        <option value="">Select Origin Port</option>
+                                        <option value="CNSHA">Shanghai, China</option>
+                                        <option value="CNNGB">Ningbo, China</option>
+                                        <option value="CNQIN">Qingdao, China</option>
+                                        <option value="SGSIN">Singapore</option>
+                                        <option value="HKHKG">Hong Kong</option>
+                                        <option value="KRPUS">Busan, South Korea</option>
+                                        <option value="JPYOK">Yokohama, Japan</option>
+                                        <option value="NLRTM">Rotterdam, Netherlands</option>
+                                        <option value="DEHAM">Hamburg, Germany</option>
+                                        <option value="GBFXT">Felixstowe, UK</option>
+                                        <option value="USNYC">New York, USA</option>
+                                        <option value="USLAX">Los Angeles, USA</option>
+                                        <option value="USBAL">Baltimore, USA</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">To Port</label>
+                                    <select id="schedule-destination" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                                        <option value="">Select Destination Port</option>
+                                        <option value="ZADUR">Durban, South Africa</option>
+                                        <option value="ZACPT">Cape Town, South Africa</option>
+                                        <option value="ZAELZ">Port Elizabeth, South Africa</option>
+                                        <option value="ZARIG">Richards Bay, South Africa</option>
+                                        <option value="ZALAD">Ladysmith, South Africa</option>
+                                        <option value="MZMPM">Maputo, Mozambique</option>
+                                        <option value="NAWVI">Walvis Bay, Namibia</option>
+                                        <option value="AOLAD">Luanda, Angola</option>
+                                        <option value="THLCH">Laem Chabang, Thailand</option>
+                                        <option value="INVTZ">JNPT, India</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                                    <select id="schedule-timeframe" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                                        <option value="7">Next 7 days</option>
+                                        <option value="14">Next 2 weeks</option>
+                                        <option value="30">Next month</option>
+                                        <option value="60">Next 2 months</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <button id="search-schedules-btn" class="btn bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 w-full">
+                                        🔍 Search Schedules
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Filter Options -->
+                            <div class="border-t pt-4">
+                                <h4 class="text-sm font-medium text-gray-700 mb-3">Filter by Shipping Line</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <button class="carrier-filter active px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800" data-carrier="all">All Lines</button>
+                                    <button class="carrier-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800" data-carrier="msc">MSC</button>
+                                    <button class="carrier-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800" data-carrier="maersk">Maersk</button>
+                                    <button class="carrier-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800" data-carrier="cma-cgm">CMA CGM</button>
+                                    <button class="carrier-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800" data-carrier="hapag-lloyd">Hapag-Lloyd</button>
+                                    <button class="carrier-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800" data-carrier="cosco">COSCO</button>
+                                    <button class="carrier-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800" data-carrier="evergreen">Evergreen</button>
+                                    <button class="carrier-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800" data-carrier="oocl">OOCL</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Section -->
+                        <div id="schedule-results" class="bg-white p-6 rounded-lg shadow-sm" style="display: none;">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-700">Available Schedules</h3>
+                                <span id="results-count" class="text-sm text-gray-500"></span>
+                            </div>
+                            <div id="schedule-list" class="space-y-4">
+                                <!-- Schedule results will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Popular Routes -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">Popular Routes</h3>
+                            <div id="popular-routes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Popular routes will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Live Updates -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">Live Schedule Updates</h3>
+                            <div id="live-updates" class="space-y-3">
+                                <!-- Live updates will be populated here -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -648,9 +1116,55 @@
                 transport: { title: 'Transport and warehousing', currencyOptions: ['ZAR'], items: { localCartageCptUnder20: { label: 'Local cartage: CPT to Klapmuts < 20 ton', value: '0', currency: 'zar' }, localCartageCpt21_28: { label: 'Local cartage: CPT to Klapmuts 21-28 ton', value: '0', currency: 'zar' }, transportDbnPta20ft: { label: 'Transport: DBN port to Pretoria - 20ft < 20 tons, direct', value: '0', currency: 'zar' }, transportDbnWhs: { label: 'Transport: DBN port to WHS', value: '0', currency: 'zar' }, unpackReload: { label: 'Unpack / Reload', value: '0', currency: 'zar' }, storage: { label: 'Storage (3 days free)', value: '0', currency: 'zar' }, outlyingSurcharge: { label: 'Outlying container depot surcharge', value: '0', currency: 'zar' }, localCartageDbnPtaA: { label: 'Local cartage: DBN WHS to Pretoria - Option A', value: '0', currency: 'zar' }, localCartageDbnPtaB: { label: 'Local cartage: DBN WHS to Pretoria - Option B', value: '0', currency: 'zar' }, localCartageDbn6m: { label: 'Local cartage: DBN WHS to Pretoria - 6m deckspace', value: '0', currency: 'zar' }, localCartageDbn12m: { label: 'Local cartage: DBN WHS to Pretoria - 12m deckspace', value: '0', currency: 'zar' }, transportPePta: { label: 'Transport: PE/Coega port to Pretoria', value: '0', currency: 'zar' } } } 
             }, 
             landedCost: { 
-                commercialInvoiceValue: { label: 'Commercial Invoice Value (USD)', value: '15000' }, 
+                importCountry: { label: '🌍 Import Country', value: 'ZA', type: 'select', options: [
+                    { value: 'ZA', label: '🇿🇦 South Africa (SARS)' },
+                    { value: 'US', label: '🇺🇸 United States (CBP)' },
+                    { value: 'GB', label: '🇬🇧 United Kingdom (HMRC)' },
+                    { value: 'DE', label: '🇩🇪 Germany (EU)' },
+                    { value: 'FR', label: '🇫🇷 France (EU)' },
+                    { value: 'CN', label: '🇨🇳 China (Customs)' },
+                    { value: 'IN', label: '🇮🇳 India (GST)' },
+                    { value: 'AU', label: '🇦🇺 Australia' },
+                    { value: 'CA', label: '🇨🇦 Canada' },
+                    { value: 'JP', label: '🇯🇵 Japan' }
+                ]},
+                invoiceCurrency: { label: '💱 Invoice Currency', value: 'USD', type: 'select', options: [
+                    { value: 'USD', label: '$ US Dollar' },
+                    { value: 'EUR', label: '€ Euro' },
+                    { value: 'GBP', label: '£ British Pound' },
+                    { value: 'ZAR', label: 'R South African Rand' },
+                    { value: 'CNY', label: '¥ Chinese Yuan' },
+                    { value: 'INR', label: '₹ Indian Rupee' },
+                    { value: 'JPY', label: '¥ Japanese Yen' },
+                    { value: 'AUD', label: 'A$ Australian Dollar' },
+                    { value: 'CAD', label: 'C$ Canadian Dollar' }
+                ]},
+                commercialInvoiceValue: { label: 'Commercial Invoice Value', value: '15000' }, 
                 hsCode: { label: 'HS Code', value: '', type: 'text' },
                 dutyRate: { label: 'Rate of Duty (%)', value: '5' }, 
+                originCountry: { label: 'Country of Origin', value: 'CN', type: 'select', options: [
+                    { value: 'CN', label: 'China' },
+                    { value: 'DE', label: 'Germany' },
+                    { value: 'IN', label: 'India' },
+                    { value: 'US', label: 'United States' },
+                    { value: 'UK', label: 'United Kingdom' },
+                    { value: 'IT', label: 'Italy' },
+                    { value: 'JP', label: 'Japan' },
+                    { value: 'KR', label: 'South Korea' },
+                    { value: 'TH', label: 'Thailand' },
+                    { value: 'VN', label: 'Vietnam' },
+                    { value: 'BW', label: 'Botswana (BELN)' },
+                    { value: 'LS', label: 'Lesotho (BELN)' },
+                    { value: 'SZ', label: 'Eswatini (BELN)' },
+                    { value: 'NA', label: 'Namibia (BELN)' }
+                ]},
+                tradeAgreement: { label: 'Trade Agreement', value: 'general', type: 'select', options: [
+                    { value: 'general', label: 'General Rate' },
+                    { value: 'EU', label: 'EU Agreement' },
+                    { value: 'SADC', label: 'SADC Agreement' },
+                    { value: 'AfCFTA', label: 'AfCFTA Agreement' },
+                    { value: 'EFTA', label: 'EFTA Agreement' }
+                ]},
                 totalKg: { label: 'Total Kg', value: '1000' } 
             },
             pricingStrategy: {
@@ -1253,8 +1767,661 @@
             }
         };
 
-        // --- EXCHANGE RATE SERVICE ---
-        class ExchangeRateService {
+        // --- GLOBAL CUSTOMS CALCULATION ENGINE ---
+        const GlobalCustomsCalculator = {
+            // Original SARS system (South Africa)
+            SARS: {
+            // BELN countries (Botswana, Lesotho, Eswatini, Namibia) - 10% uplift exemption
+            belnCountries: ['BW', 'LS', 'SZ', 'NA'],
+            
+            // VAT rate (current since 2018-04-01)
+            vatRate: 0.15,
+            
+            // Complete HS Code database - 11,217 codes from Schedule 1 Part 1
+            hsCodeDatabase: null, // Will be loaded from external source
+            
+            // Initialize the complete database
+            async initializeDatabase() {
+                if (this.hsCodeDatabase) {
+                    return; // Already loaded
+                }
+                
+                try {
+                    console.log('🔄 Loading complete HS Code database...');
+                    
+                    // Try to load the COMPLETE database with all 11,217 codes
+                    let response = await fetch('./hs-codes-complete.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.codes) {
+                            this.hsCodeDatabase = data.codes;
+                            console.log(`✅ Loaded ${Object.keys(this.hsCodeDatabase).length} HS codes from COMPLETE database`);
+                            
+                            // Show sample codes starting with 11 to verify
+                            const codes11 = Object.keys(this.hsCodeDatabase).filter(code => code.startsWith('11'));
+                            console.log(`📋 Found ${codes11.length} HS codes starting with '11' (e.g., ${codes11.slice(0, 3).join(', ')})`);
+                            return;
+                        }
+                    }
+                    
+                    // Fallback to other databases
+                    response = await fetch('./hs-codes-database.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.codes) {
+                            this.hsCodeDatabase = data.codes;
+                            console.log(`✅ Loaded ${Object.keys(this.hsCodeDatabase).length} HS codes from standard database`);
+                            return;
+                        }
+                    }
+                    
+                    // Try compressed version as last resort
+                    response = await fetch('./hs-codes-compressed.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.codes) {
+                            this.hsCodeDatabase = data.codes;
+                            console.log(`⚠️ Loaded ${Object.keys(this.hsCodeDatabase).length} HS codes from compressed database (limited coverage)`);
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Could not load database files, using fallback:', error.message);
+                }
+                
+                // Fallback: Use expanded sample database with key product categories
+                this.hsCodeDatabase = {
+                    // Live animals & animal products (01-05)
+                    "0101": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "0102": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "0201": { gen: 40, eu: 40, sadc: 20, afcfta: 20 },
+                    "0202": { gen: 40, eu: 40, sadc: 20, afcfta: 20 },
+                    "0203": { gen: 40, eu: 40, sadc: 20, afcfta: 20 },
+                    "0401": { gen: 40, eu: 40, sadc: 20, afcfta: 20 },
+                    "0402": { gen: 40, eu: 40, sadc: 20, afcfta: 20 },
+                    
+                    // Vegetable products (06-14)
+                    "0701": { gen: 30, eu: 30, sadc: 15, afcfta: 15 },
+                    "0713": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "0901": { gen: 7.5, eu: 0, sadc: 3.75, afcfta: 3.75 },
+                    "0902": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "1001": { gen: 107.8, eu: 107.8, sadc: 53.9, afcfta: 53.9 },
+                    "1005": { gen: 107.8, eu: 107.8, sadc: 53.9, afcfta: 53.9 },
+                    "1204": { gen: 4, efta: 4, merc: 4, afcfta: 7 },
+                    "1206": { gen: 4, efta: 4, merc: 4, afcfta: 7 },
+                    
+                    // Fats and oils (15)
+                    "1503": { gen: 0.1, efta: 0.1, merc: 5, afcfta: 0.05 },
+                    "1507": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "1511": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "1515": { gen: 7.5, eu: 0, sadc: 3.75, afcfta: 3.75 },
+                    
+                    // Sugar and confectionery (17)
+                    "1701": { gen: 250, eu: 250, sadc: 125, afcfta: 125 },
+                    "1704": { gen: 30, eu: 0, sadc: 15, afcfta: 15 },
+                    
+                    // Beverages and tobacco (20-24)
+                    "2009": { gen: 30, eu: 0, sadc: 15, afcfta: 15 },
+                    "2202": { gen: 25, eu: 0, sadc: 12.5, afcfta: 12.5 },
+                    "2203": { gen: 85, eu: 85, sadc: 42.5, afcfta: 42.5 },
+                    "2208": { gen: 1050, eu: 1050, sadc: 525, afcfta: 525 },
+                    "2402": { gen: 350, eu: 350, sadc: 175, afcfta: 175 },
+                    
+                    // Food preparations (19-21)
+                    "1905": { gen: 25, eu: 0, sadc: 12.5, afcfta: 12.5 },
+                    "2103": { gen: 5, eu: 0, sadc: 3, afcfta: 2.5 },
+                    "2104": { gen: 20, eu: 0, sadc: 0, afcfta: 10 },
+                    "2105": { gen: 25, eu: 0, sadc: 12.5, afcfta: 12.5 },
+                    "2106": { gen: 20, eu: 0, sadc: 0, afcfta: 10 },
+                    
+                    // Chemicals (28-38)
+                    "2804": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "2817": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "2902": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "3004": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "3808": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    
+                    // Plastics and rubber (39-40)
+                    "3901": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "3920": { gen: 10, eu: 0, sadc: 5, afcfta: 5 },
+                    "4011": { gen: 30, eu: 0, sadc: 15, afcfta: 15 },
+                    
+                    // Textiles and clothing (50-63)
+                    "5208": { gen: 22, eu: 0, sadc: 11, afcfta: 11 },
+                    "6109": { gen: 40, eu: 0, sadc: 20, afcfta: 20 },
+                    "6110": { gen: 40, eu: 0, sadc: 20, afcfta: 20 },
+                    "6203": { gen: 40, eu: 0, sadc: 20, afcfta: 20 },
+                    "6204": { gen: 40, eu: 0, sadc: 20, afcfta: 20 },
+                    "6404": { gen: 30, eu: 0, sadc: 15, afcfta: 15 },
+                    
+                    // Base metals (72-83)
+                    "7208": { gen: 10, eu: 0, sadc: 5, afcfta: 5 },
+                    "7601": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "8302": { gen: 15, eu: 0, sadc: 7.5, afcfta: 7.5 },
+                    
+                    // Machinery and electronics (84-85)
+                    "8414": { gen: 15, eu: 0, sadc: 7.5, afcfta: 7.5 },
+                    "8415": { gen: 15, eu: 0, sadc: 7.5, afcfta: 7.5 },
+                    "8471": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "8517": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    "8528": { gen: 15, eu: 0, sadc: 7.5, afcfta: 7.5 },
+                    
+                    // Vehicles (87)
+                    "8703": { gen: 30, eu: 0, sadc: 15, afcfta: 15 },
+                    "8704": { gen: 20, eu: 0, sadc: 10, afcfta: 10 },
+                    "8711": { gen: 30, eu: 0, sadc: 15, afcfta: 15 },
+                    
+                    // Optical instruments (90)
+                    "9013": { gen: 0, eu: 0, sadc: 0, afcfta: 0 },
+                    
+                    // Furniture (94)
+                    "9401": { gen: 20, eu: 0, sadc: 10, afcfta: 10 },
+                    "9403": { gen: 20, eu: 0, sadc: 10, afcfta: 10 }
+                };
+                
+                console.log(`✅ Loaded ${Object.keys(this.hsCodeDatabase).length} HS codes from fallback database`);
+            },
+            
+            // Trade agreement mapping for country codes
+            tradeAgreementMapping: {
+                // EU countries
+                'DE': 'EU', 'FR': 'EU', 'IT': 'EU', 'ES': 'EU', 'NL': 'EU', 'BE': 'EU', 'AT': 'EU', 'PT': 'EU', 'GR': 'EU', 'IE': 'EU', 'LU': 'EU', 'FI': 'EU', 'SE': 'EU', 'DK': 'EU', 'CZ': 'EU', 'HU': 'EU', 'PL': 'EU', 'SK': 'EU', 'SI': 'EU', 'EE': 'EU', 'LV': 'EU', 'LT': 'EU', 'MT': 'EU', 'CY': 'EU', 'BG': 'EU', 'RO': 'EU', 'HR': 'EU',
+                // UK
+                'GB': 'UK', 'UK': 'UK',
+                // SADC
+                'BW': 'SADC', 'LS': 'SADC', 'SZ': 'SADC', 'NA': 'SADC', 'ZW': 'SADC', 'ZM': 'SADC', 'TZ': 'SADC', 'MW': 'SADC', 'MU': 'SADC', 'MG': 'SADC', 'MZ': 'SADC', 'AO': 'SADC', 'CD': 'SADC', 'SC': 'SADC',
+                // EFTA
+                'CH': 'EFTA', 'NO': 'EFTA', 'IS': 'EFTA', 'LI': 'EFTA',
+                // MERCOSUR
+                'BR': 'MERCOSUR', 'AR': 'MERCOSUR', 'UY': 'MERCOSUR', 'PY': 'MERCOSUR'
+            },
+            
+            // Calculate customs duty according to SARS regulations
+            calculateDuty(customsValue, dutyRate, dutyType = 'ad-valorem', quantity = 1, specificRate = 0) {
+                if (dutyType === 'ad-valorem') {
+                    // Duty (ZAR) = Customs Value (CIF) × Duty Rate (%)
+                    return customsValue * (dutyRate / 100);
+                } else if (dutyType === 'specific') {
+                    // Duty (ZAR) = Quantity (kg / unit) × Specific-Rate (cents or ZAR per unit)
+                    return quantity * specificRate;
+                } else {
+                    return 0;
+                }
+            },
+            
+            // Calculate Import VAT according to official SARS formula
+            calculateImportVAT(customsValue, nonRebatedDuties, originCountryCode) {
+                // Check if origin is BELN country (10% uplift exemption)
+                const isBELN = this.belnCountries.includes(originCountryCode?.toUpperCase());
+                
+                // Calculate 10% uplift (exempt for BELN countries)
+                const uplift = isBELN ? 0 : customsValue * 0.10;
+                
+                // ATV = (Customs Value + 10% thereof) + (any non-rebated duties levied on the goods)
+                const atv = customsValue + uplift + nonRebatedDuties;
+                
+                // VAT payable = ATV × 15%
+                const importVAT = atv * this.vatRate;
+                
+                return {
+                    customsValue,
+                    uplift,
+                    nonRebatedDuties,
+                    atv,
+                    importVAT,
+                    isBELN,
+                    calculation: `ATV = ${formatCurrency(customsValue)} + ${formatCurrency(uplift)} + ${formatCurrency(nonRebatedDuties)} = ${formatCurrency(atv)}\nVAT = ${formatCurrency(atv)} × 15% = ${formatCurrency(importVAT)}`
+                };
+            },
+            
+            // Lookup HS code in database
+            async lookupHSCode(hsCode) {
+                // Initialize database if not already done
+                if (!this.hsCodeDatabase) {
+                    await this.initializeDatabase();
+                }
+                
+                const normalizedCode = hsCode.replace(/\s+/g, '').replace(/[.-]/g, '.');
+                const entry = this.hsCodeDatabase[normalizedCode];
+                
+                if (!entry) return null;
+                
+                // Convert compressed format to standard format
+                return {
+                    description: entry.desc || '',
+                    general: entry.gen || 0,
+                    EU: entry.eu || 0,
+                    UK: entry.eu || 0, // UK follows EU rates
+                    EFTA: entry.efta || 0,
+                    SADC: entry.sadc || 0,
+                    MERCOSUR: entry.merc || 0,
+                    AfCFTA: entry.afcfta || 0
+                };
+            },
+            
+            // Auto-detect trade agreement from country code
+            detectTradeAgreement(originCountry) {
+                return this.tradeAgreementMapping[originCountry?.toUpperCase()] || 'general';
+            },
+            
+            // Get trade agreement preferential rate from HS code database
+            async getPreferentialRate(hsCode, baseRate, originCountry, tradeAgreement = null) {
+                // Auto-detect trade agreement if not specified
+                if (!tradeAgreement) {
+                    tradeAgreement = this.detectTradeAgreement(originCountry);
+                }
+                
+                // Lookup HS code in database
+                const hsData = await this.lookupHSCode(hsCode);
+                if (hsData) {
+                    const rate = hsData[tradeAgreement] ?? hsData.general;
+                    return rate;
+                }
+                
+                // Fallback to base rate if HS code not found
+                return baseRate;
+            },
+            
+            // Calculate mixed rate (specific vs ad-valorem, use higher yield)
+            calculateMixedRate(customsValue, adValoremRate, specificRate, quantity) {
+                const adValoremDuty = this.calculateDuty(customsValue, adValoremRate, 'ad-valorem');
+                const specificDuty = this.calculateDuty(customsValue, 0, 'specific', quantity, specificRate);
+                
+                return {
+                    adValoremDuty,
+                    specificDuty,
+                    applicableDuty: Math.max(adValoremDuty, specificDuty),
+                    method: adValoremDuty > specificDuty ? 'ad-valorem' : 'specific'
+                };
+            },
+            
+            // Complete SARS-compliant calculation with audit trail
+            async calculateComplete(params) {
+                const {
+                    customsValue,
+                    hsCode,
+                    baseDutyRate,
+                    originCountry,
+                    tradeAgreement = null,
+                    dutyType = 'ad-valorem',
+                    quantity = 1,
+                    specificRate = 0,
+                    mixedRate = false,
+                    exciseRate = 0,
+                    antiDumpingRate = 0,
+                    safeguardRate = 0
+                } = params;
+                
+                // Auto-detect trade agreement if not specified
+                const detectedTradeAgreement = tradeAgreement || this.detectTradeAgreement(originCountry);
+                
+                // Lookup HS code data
+                const hsData = await this.lookupHSCode(hsCode);
+                
+                // Get applicable duty rate (considering trade agreements)
+                const applicableDutyRate = await this.getPreferentialRate(hsCode, baseDutyRate, originCountry, detectedTradeAgreement);
+                
+                // Calculate customs duty
+                let customsDuty;
+                let dutyMethod = dutyType;
+                
+                if (mixedRate) {
+                    const mixedCalc = this.calculateMixedRate(customsValue, applicableDutyRate, specificRate, quantity);
+                    customsDuty = mixedCalc.applicableDuty;
+                    dutyMethod = mixedCalc.method;
+                } else {
+                    customsDuty = this.calculateDuty(customsValue, applicableDutyRate, dutyType, quantity, specificRate);
+                }
+                
+                // Calculate additional duties
+                const exciseDuty = this.calculateDuty(customsValue, exciseRate, 'ad-valorem');
+                const antiDumpingDuty = this.calculateDuty(customsValue, antiDumpingRate, 'ad-valorem');
+                const safeguardDuty = this.calculateDuty(customsValue, safeguardRate, 'ad-valorem');
+                
+                // Total non-rebated duties = Σ{ ordinary customs duty + excise + anti-dumping + safeguard }
+                const totalNonRebatedDuties = customsDuty + exciseDuty + antiDumpingDuty + safeguardDuty;
+                
+                // Calculate Import VAT
+                const vatCalculation = this.calculateImportVAT(customsValue, totalNonRebatedDuties, originCountry);
+                
+                // Total border taxes
+                const totalBorderTaxes = totalNonRebatedDuties + vatCalculation.importVAT;
+                
+                // Audit trail
+                const auditTrail = {
+                    calculationDate: new Date().toISOString(),
+                    hsCode,
+                    hsDescription: hsData?.description || 'Unknown',
+                    originCountry,
+                    detectedTradeAgreement,
+                    scheduleLine: `Schedule 1 Part 1 - ${hsCode}`,
+                    applicableDutyRate,
+                    dutyMethod,
+                    customsValue,
+                    quantity,
+                    specificRate
+                };
+                
+                return {
+                    customsValue,
+                    hsCode,
+                    originCountry,
+                    tradeAgreement: detectedTradeAgreement,
+                    baseDutyRate,
+                    applicableDutyRate,
+                    customsDuty,
+                    exciseDuty,
+                    antiDumpingDuty,
+                    safeguardDuty,
+                    totalNonRebatedDuties,
+                    ...vatCalculation,
+                    totalBorderTaxes,
+                    auditTrail,
+                    breakdown: {
+                        dutyCalculation: `Duty = ${formatCurrency(customsValue)} × ${applicableDutyRate}% = ${formatCurrency(customsDuty)}`,
+                        vatCalculation: vatCalculation.calculation,
+                        total: `Total Border Taxes = ${formatCurrency(totalNonRebatedDuties)} + ${formatCurrency(vatCalculation.importVAT)} = ${formatCurrency(totalBorderTaxes)}`
+                    }
+                };
+            },
+            
+            // Validate calculation against SARS examples
+            validateExample() {
+                console.log('🧪 Running SARS Validation Tests...');
+                
+                // Example 1 from SARS: India origin, R1000 customs value, 5% duty
+                const example1 = this.calculateComplete({
+                    customsValue: 1000,
+                    hsCode: '2106.90.90',
+                    baseDutyRate: 5,
+                    originCountry: 'IN'
+                });
+                
+                // Expected: Duty R50, ATV R1150, VAT R172.50
+                const test1Valid = Math.abs(example1.customsDuty - 50) < 0.01 && 
+                                  Math.abs(example1.atv - 1150) < 0.01 && 
+                                  Math.abs(example1.importVAT - 172.50) < 0.01;
+                
+                console.log('Test 1 (India Example):', test1Valid ? '✅ PASSED' : '❌ FAILED', example1.breakdown);
+                
+                // Example 2: German origin (EU), R500k customs value, 0% duty (preferential)
+                const example2 = this.calculateComplete({
+                    customsValue: 500000,
+                    hsCode: '2106.90.90',
+                    baseDutyRate: 20,
+                    originCountry: 'DE'
+                });
+                
+                // Expected: Duty R0, ATV R550k, VAT R82.5k
+                const test2Valid = Math.abs(example2.customsDuty - 0) < 0.01 && 
+                                  Math.abs(example2.atv - 550000) < 0.01 && 
+                                  Math.abs(example2.importVAT - 82500) < 0.01;
+                
+                console.log('Test 2 (German EU Example):', test2Valid ? '✅ PASSED' : '❌ FAILED', example2.breakdown);
+                
+                // Example 3: BELN country (no uplift)
+                const example3 = this.calculateComplete({
+                    customsValue: 1000,
+                    hsCode: '2106.90.90',
+                    baseDutyRate: 5,
+                    originCountry: 'BW'
+                });
+                
+                // Expected: Duty R0 (SADC), ATV R1000 (no uplift), VAT R150
+                const test3Valid = Math.abs(example3.customsDuty - 0) < 0.01 && 
+                                  Math.abs(example3.atv - 1000) < 0.01 && 
+                                  Math.abs(example3.importVAT - 150) < 0.01;
+                
+                console.log('Test 3 (BELN/SADC Example):', test3Valid ? '✅ PASSED' : '❌ FAILED', example3.breakdown);
+                
+                const allValid = test1Valid && test2Valid && test3Valid;
+                console.log('Overall Validation:', allValid ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED');
+                
+                return allValid;
+            },
+            
+            // Add travellers flat rate calculation
+            calculateTravellersRate(customsValue, dutyFreeAllowance = 0) {
+                const taxableValue = Math.max(0, customsValue - dutyFreeAllowance);
+                const flatRateDuty = taxableValue * 0.20; // 20% flat rate
+                const vatCalculation = this.calculateImportVAT(taxableValue, flatRateDuty, 'ZA');
+                
+                return {
+                    customsValue,
+                    dutyFreeAllowance,
+                    taxableValue,
+                    flatRateDuty,
+                    ...vatCalculation,
+                    totalBorderTaxes: flatRateDuty + vatCalculation.importVAT,
+                    method: 'Travellers Flat Rate (20%)'
+                };
+            }
+            },
+            
+            // United States Customs (CBP)
+            US: {
+                vatRate: 0, // No federal VAT, state sales tax varies
+                stateTaxRates: {
+                    'CA': 0.075, 'NY': 0.08, 'TX': 0.0625, 'FL': 0.06,
+                    'WA': 0.065, 'IL': 0.0625, 'OH': 0.0575, 'default': 0.06
+                },
+                
+                calculateDuty(customsValue, dutyRate, dutyType = 'ad-valorem', quantity = 1) {
+                    if (dutyType === 'ad-valorem') {
+                        return customsValue * (dutyRate / 100);
+                    }
+                    return 0;
+                },
+                
+                calculateTax(customsValue, duties, state = 'default') {
+                    const taxRate = this.stateTaxRates[state] || this.stateTaxRates.default;
+                    const taxableValue = customsValue + duties;
+                    return taxableValue * taxRate;
+                },
+                
+                tradeAgreements: {
+                    'MX': 'USMCA', 'CA': 'USMCA',
+                    'general': 'MFN'
+                }
+            },
+            
+            // European Union Customs
+            EU: {
+                vatRates: {
+                    'DE': 0.19, 'FR': 0.20, 'IT': 0.22, 'ES': 0.21, 'NL': 0.21,
+                    'BE': 0.21, 'AT': 0.20, 'PT': 0.23, 'GR': 0.24, 'IE': 0.23,
+                    'default': 0.20
+                },
+                
+                calculateDuty(customsValue, dutyRate, dutyType = 'ad-valorem') {
+                    if (dutyType === 'ad-valorem') {
+                        return customsValue * (dutyRate / 100);
+                    }
+                    return 0;
+                },
+                
+                calculateVAT(customsValue, duties, country = 'default') {
+                    const vatRate = this.vatRates[country] || this.vatRates.default;
+                    const vatableValue = customsValue + duties;
+                    return vatableValue * vatRate;
+                },
+                
+                tradeAgreements: {
+                    'CH': 'EFTA', 'NO': 'EFTA', 'IS': 'EFTA',
+                    'CA': 'CETA', 'JP': 'EPA', 'KR': 'FTA'
+                }
+            },
+            
+            // United Kingdom Customs (HMRC)
+            UK: {
+                vatRate: 0.20,
+                
+                calculateDuty(customsValue, dutyRate, dutyType = 'ad-valorem') {
+                    if (dutyType === 'ad-valorem') {
+                        return customsValue * (dutyRate / 100);
+                    }
+                    return 0;
+                },
+                
+                calculateVAT(customsValue, duties) {
+                    const vatableValue = customsValue + duties;
+                    return vatableValue * this.vatRate;
+                },
+                
+                tradeAgreements: {
+                    'EU': 'TCA', 'AU': 'FTA', 'NZ': 'FTA', 'JP': 'EPA'
+                }
+            },
+            
+            // China Customs
+            CN: {
+                vatRate: 0.13,
+                consumptionTaxItems: ['alcohol', 'tobacco', 'luxury'],
+                
+                calculateDuty(customsValue, dutyRate, dutyType = 'ad-valorem') {
+                    if (dutyType === 'ad-valorem') {
+                        return customsValue * (dutyRate / 100);
+                    }
+                    return 0;
+                },
+                
+                calculateVAT(customsValue, duties) {
+                    const vatableValue = customsValue + duties;
+                    return vatableValue * this.vatRate;
+                },
+                
+                tradeAgreements: {
+                    'ASEAN': 'RCEP', 'AU': 'FTA', 'NZ': 'FTA', 'KR': 'FTA'
+                }
+            },
+            
+            // India Customs
+            IN: {
+                gstRate: 0.18,
+                cessDuties: ['environment', 'education', 'health'],
+                
+                calculateDuty(customsValue, dutyRate, dutyType = 'ad-valorem') {
+                    if (dutyType === 'ad-valorem') {
+                        return customsValue * (dutyRate / 100);
+                    }
+                    return 0;
+                },
+                
+                calculateGST(customsValue, duties) {
+                    const gstableValue = customsValue + duties;
+                    return gstableValue * this.gstRate;
+                },
+                
+                tradeAgreements: {
+                    'ASEAN': 'AIFTA', 'JP': 'EPA', 'KR': 'CEPA'
+                }
+            },
+            
+            // Universal calculation method
+            async calculateForCountry(importCountry, params) {
+                const {
+                    customsValue, hsCode, originCountry, dutyRate = 0,
+                    dutyType = 'ad-valorem', quantity = 1, state = null
+                } = params;
+                
+                let result = {
+                    importCountry,
+                    originCountry,
+                    customsValue,
+                    hsCode,
+                    customsDuty: 0,
+                    vat: 0,
+                    totalTaxes: 0,
+                    method: 'Unknown system'
+                };
+                
+                switch (importCountry.toUpperCase()) {
+                    case 'ZA':
+                        const sarsResult = await this.SARS.calculateComplete({
+                            customsValue, hsCode, originCountry, dutyType, quantity
+                        });
+                        if (sarsResult) {
+                            result = {
+                                ...result,
+                                customsDuty: sarsResult.customsDuty,
+                                vat: sarsResult.importVAT,
+                                totalTaxes: sarsResult.totalBorderTaxes,
+                                method: 'SARS (South Africa)',
+                                tradeAgreement: sarsResult.tradeAgreement,
+                                breakdown: sarsResult.breakdown
+                            };
+                        }
+                        break;
+                        
+                    case 'US':
+                        result.customsDuty = this.US.calculateDuty(customsValue, dutyRate, dutyType);
+                        result.vat = this.US.calculateTax(customsValue, result.customsDuty, state);
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'CBP (United States)';
+                        break;
+                        
+                    case 'DE': case 'FR': case 'IT': case 'ES': case 'NL': case 'BE': 
+                    case 'AT': case 'PT': case 'GR': case 'IE':
+                        result.customsDuty = this.EU.calculateDuty(customsValue, dutyRate, dutyType);
+                        result.vat = this.EU.calculateVAT(customsValue, result.customsDuty, importCountry);
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'EU Customs Union';
+                        break;
+                        
+                    case 'GB': case 'UK':
+                        result.customsDuty = this.UK.calculateDuty(customsValue, dutyRate, dutyType);
+                        result.vat = this.UK.calculateVAT(customsValue, result.customsDuty);
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'HMRC (United Kingdom)';
+                        break;
+                        
+                    case 'CN':
+                        result.customsDuty = this.CN.calculateDuty(customsValue, dutyRate, dutyType);
+                        result.vat = this.CN.calculateVAT(customsValue, result.customsDuty);
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'China Customs';
+                        break;
+                        
+                    case 'IN':
+                        result.customsDuty = this.IN.calculateDuty(customsValue, dutyRate, dutyType);
+                        result.vat = this.IN.calculateGST(customsValue, result.customsDuty);
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'India Customs (GST)';
+                        break;
+                        
+                    default:
+                        result.customsDuty = customsValue * (dutyRate / 100);
+                        result.vat = (customsValue + result.customsDuty) * 0.15;
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'Generic (Estimated)';
+                        break;
+                }
+                
+                return result;
+            },
+            
+            // Get list of supported countries
+            getSupportedCountries() {
+                return [
+                    { code: 'ZA', name: 'South Africa', flag: '🇿🇦', system: 'SARS' },
+                    { code: 'US', name: 'United States', flag: '🇺🇸', system: 'CBP' },
+                    { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', system: 'HMRC' },
+                    { code: 'DE', name: 'Germany', flag: '🇩🇪', system: 'EU' },
+                    { code: 'FR', name: 'France', flag: '🇫🇷', system: 'EU' },
+                    { code: 'CN', name: 'China', flag: '🇨🇳', system: 'China Customs' },
+                    { code: 'IN', name: 'India', flag: '🇮🇳', system: 'GST' },
+                    { code: 'AU', name: 'Australia', flag: '🇦🇺', system: 'Generic' },
+                    { code: 'CA', name: 'Canada', flag: '🇨🇦', system: 'Generic' },
+                    { code: 'JP', name: 'Japan', flag: '🇯🇵', system: 'Generic' }
+                ];
+            }
+        };
+        
+        // Backward compatibility - keep SARS as alias
+        const SARSCustomsCalculator = GlobalCustomsCalculator.SARS;
+
+        // --- GLOBAL CURRENCY SERVICE ---
+        class GlobalCurrencyService {
             constructor() {
                 this.apis = [
                     {
@@ -1272,6 +2439,64 @@
                 this.timestampKey = 'exchange_rates_timestamp';
                 this.cacheValidityHours = 24;
                 this.spotMultiplier = 2; // spot x 2
+                
+                // Global currency definitions
+                this.currencies = {
+                    'USD': { name: 'US Dollar', symbol: '$', countries: ['US'], flag: '🇺🇸' },
+                    'EUR': { name: 'Euro', symbol: '€', countries: ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'PT', 'GR', 'IE'], flag: '🇪🇺' },
+                    'GBP': { name: 'British Pound', symbol: '£', countries: ['GB', 'UK'], flag: '🇬🇧' },
+                    'ZAR': { name: 'South African Rand', symbol: 'R', countries: ['ZA'], flag: '🇿🇦' },
+                    'CNY': { name: 'Chinese Yuan', symbol: '¥', countries: ['CN'], flag: '🇨🇳' },
+                    'INR': { name: 'Indian Rupee', symbol: '₹', countries: ['IN'], flag: '🇮🇳' },
+                    'JPY': { name: 'Japanese Yen', symbol: '¥', countries: ['JP'], flag: '🇯🇵' },
+                    'AUD': { name: 'Australian Dollar', symbol: 'A$', countries: ['AU'], flag: '🇦🇺' },
+                    'CAD': { name: 'Canadian Dollar', symbol: 'C$', countries: ['CA'], flag: '🇨🇦' },
+                    'CHF': { name: 'Swiss Franc', symbol: 'Fr', countries: ['CH'], flag: '🇨🇭' },
+                    'KRW': { name: 'South Korean Won', symbol: '₩', countries: ['KR'], flag: '🇰🇷' },
+                    'SGD': { name: 'Singapore Dollar', symbol: 'S$', countries: ['SG'], flag: '🇸🇬' },
+                    'HKD': { name: 'Hong Kong Dollar', symbol: 'HK$', countries: ['HK'], flag: '🇭🇰' },
+                    'NOK': { name: 'Norwegian Krone', symbol: 'kr', countries: ['NO'], flag: '🇳🇴' },
+                    'SEK': { name: 'Swedish Krona', symbol: 'kr', countries: ['SE'], flag: '🇸🇪' },
+                    'DKK': { name: 'Danish Krone', symbol: 'kr', countries: ['DK'], flag: '🇩🇰' },
+                    'BRL': { name: 'Brazilian Real', symbol: 'R$', countries: ['BR'], flag: '🇧🇷' },
+                    'MXN': { name: 'Mexican Peso', symbol: '$', countries: ['MX'], flag: '🇲🇽' },
+                    'RUB': { name: 'Russian Ruble', symbol: '₽', countries: ['RU'], flag: '🇷🇺' },
+                    'TRY': { name: 'Turkish Lira', symbol: '₺', countries: ['TR'], flag: '🇹🇷' }
+                };
+            }
+            
+            // Get currency for country
+            getCurrencyForCountry(countryCode) {
+                for (const [currency, info] of Object.entries(this.currencies)) {
+                    if (info.countries.includes(countryCode.toUpperCase())) {
+                        return currency;
+                    }
+                }
+                return 'USD'; // Default fallback
+            }
+            
+            // Get all supported currencies
+            getSupportedCurrencies() {
+                return Object.keys(this.currencies).map(code => ({
+                    code,
+                    ...this.currencies[code]
+                }));
+            }
+            
+            // Format currency amount
+            formatCurrency(amount, currencyCode, countryCode = null) {
+                const currency = this.currencies[currencyCode];
+                if (!currency) return amount.toString();
+                
+                const locale = countryCode ? `en-${countryCode}` : 'en-US';
+                try {
+                    return new Intl.NumberFormat(locale, {
+                        style: 'currency',
+                        currency: currencyCode
+                    }).format(amount);
+                } catch {
+                    return `${currency.symbol}${amount.toLocaleString()}`;
+                }
             }
 
             async fetchRate(fromCurrency, toCurrency) {
@@ -1431,8 +2656,8 @@
             }
         }
 
-        // Initialize Exchange Rate Service
-        const exchangeRateService = new ExchangeRateService();
+        // Initialize Global Currency Service
+        const exchangeRateService = new GlobalCurrencyService();
 
         // --- UTILITY FUNCTIONS ---
         const formatCurrency = (value, currency = 'ZAR') => new Intl.NumberFormat('en-ZA', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(parseFloat(value) || 0);
@@ -1740,6 +2965,1444 @@
             }
         };
 
+        // --- SHIPMENT TRACKING SYSTEM ---
+        const ShipmentTracker = {
+            trackingTemplates: {
+                'asia-dbn': {
+                    name: 'Asia to Durban',
+                    description: 'Popular route from Asian ports to Durban',
+                    icon: '🚢',
+                    route: 'Asia → Durban',
+                    avgTransitTime: '21-28 days',
+                    carriers: ['MSC', 'Maersk', 'CMA CGM'],
+                    color: 'blue'
+                },
+                'europe-cpt': {
+                    name: 'Europe to Cape Town',
+                    description: 'European ports to Cape Town route',
+                    icon: '🌍',
+                    route: 'Europe → Cape Town',
+                    avgTransitTime: '14-21 days',
+                    carriers: ['MSC', 'Maersk', 'Hapag-Lloyd'],
+                    color: 'green'
+                },
+                'usa-dbn': {
+                    name: 'USA to Durban',
+                    description: 'US East Coast to Durban route',
+                    icon: '🇺🇸',
+                    route: 'USA → Durban',
+                    avgTransitTime: '28-35 days',
+                    carriers: ['MSC', 'CMA CGM', 'Evergreen'],
+                    color: 'purple'
+                },
+                'china-cpt': {
+                    name: 'China to Cape Town',
+                    description: 'Chinese ports to Cape Town route',
+                    icon: '🇨🇳',
+                    route: 'China → Cape Town',
+                    avgTransitTime: '25-32 days',
+                    carriers: ['COSCO', 'MSC', 'CMA CGM'],
+                    color: 'red'
+                }
+            },
+
+            carriers: {
+                'msc': {
+                    name: 'Mediterranean Shipping Company',
+                    code: 'MSC',
+                    color: '#0066cc',
+                    apiEndpoint: 'https://api.msc.com/track',
+                    trackingUrl: 'https://www.msc.com/track',
+                    supportedTypes: ['container', 'bl', 'booking']
+                },
+                'maersk': {
+                    name: 'Maersk Line',
+                    code: 'MAEU',
+                    color: '#00a8e6',
+                    apiEndpoint: 'https://api.maersk.com/track',
+                    trackingUrl: 'https://www.maersk.com/tracking',
+                    supportedTypes: ['container', 'bl', 'booking']
+                },
+                'cma-cgm': {
+                    name: 'CMA CGM',
+                    code: 'CMDU',
+                    color: '#e31837',
+                    apiEndpoint: 'https://api.cma-cgm.com/track',
+                    trackingUrl: 'https://www.cma-cgm.com/tracking',
+                    supportedTypes: ['container', 'bl']
+                },
+                'hapag-lloyd': {
+                    name: 'Hapag-Lloyd',
+                    code: 'HLCU',
+                    color: '#e40521',
+                    apiEndpoint: 'https://api.hapag-lloyd.com/track',
+                    trackingUrl: 'https://www.hapag-lloyd.com/tracking',
+                    supportedTypes: ['container', 'bl']
+                },
+                'cosco': {
+                    name: 'COSCO SHIPPING',
+                    code: 'COSU',
+                    color: '#003087',
+                    apiEndpoint: 'https://api.cosco.com/track',
+                    trackingUrl: 'https://elines.coscoshipping.com/ebusiness/cargotracking',
+                    supportedTypes: ['container', 'bl']
+                }
+            },
+
+            activeShipments: [],
+
+            init() {
+                this.loadActiveShipmentsFromStorage();
+                this.loadTrackingTemplates();
+                this.loadActiveShipments();
+                this.bindTrackingEvents();
+            },
+
+            loadTrackingTemplates() {
+                const templatesGrid = document.getElementById('tracking-templates-grid');
+                if (!templatesGrid) return;
+
+                templatesGrid.innerHTML = Object.entries(this.trackingTemplates).map(([id, template]) => `
+                    <div class="tracking-template-card bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-${template.color}-500 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
+                         onclick="ShipmentTracker.selectTemplate('${id}')">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-2xl">${template.icon}</div>
+                            <span class="text-xs px-2 py-1 bg-${template.color}-100 text-${template.color}-800 rounded-full font-medium">Template</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 text-sm mb-2">${template.name}</h4>
+                        <p class="text-xs text-gray-600 mb-3">${template.description}</p>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span>Route:</span>
+                                <span class="font-medium">${template.route}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span>Transit:</span>
+                                <span class="font-medium">${template.avgTransitTime}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span>Carriers:</span>
+                                <span class="font-medium">${template.carriers.join(', ')}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            loadActiveShipments() {
+                const activeShipmentsDiv = document.getElementById('active-shipments');
+                if (!activeShipmentsDiv) return;
+
+                if (this.activeShipments.length === 0) {
+                    activeShipmentsDiv.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                            <p class="mt-2 text-sm">No active shipments</p>
+                            <p class="text-xs text-gray-400">Start tracking shipments to see them here</p>
+                        </div>
+                    `;
+                } else {
+                    activeShipmentsDiv.innerHTML = this.activeShipments.map(shipment => `
+                        <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex-1">
+                                    <h4 class="font-medium text-gray-800">${shipment.trackingNumber}</h4>
+                                    <p class="text-sm text-gray-600">${shipment.carrier} • ${shipment.vessel || 'Unknown Vessel'}</p>
+                                    <p class="text-xs text-gray-500">${shipment.route.origin || 'Unknown'} → ${shipment.route.destination || 'Unknown'}</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2 py-1 text-xs rounded-full ${this.getStatusColor(shipment.status)}">${shipment.status}</span>
+                                    <button onclick="ShipmentTracker.removeActiveShipment('${shipment.id}')" 
+                                            class="text-red-500 hover:text-red-700 text-xs" title="Remove">
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3 text-xs text-gray-600">
+                                <div>
+                                    <span class="font-medium">Location:</span> ${shipment.location}
+                                </div>
+                                <div>
+                                    <span class="font-medium">ETA:</span> ${shipment.eta}
+                                </div>
+                                <div>
+                                    <span class="font-medium">Progress:</span> ${shipment.progress}%
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-sm text-gray-500">
+                                <span>Last Update: ${shipment.lastUpdate}</span>
+                                <div class="flex space-x-2">
+                                    <button onclick="ShipmentTracker.refreshShipment('${shipment.id}')" 
+                                            class="text-blue-600 hover:text-blue-800 text-xs">
+                                        🔄 Refresh
+                                    </button>
+                                    <button onclick="ShipmentTracker.viewShipmentDetails('${shipment.id}')" 
+                                            class="text-green-600 hover:text-green-800 text-xs">
+                                        👁️ View
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            },
+
+            bindTrackingEvents() {
+                const trackBtn = document.getElementById('track-shipment-btn');
+                if (trackBtn) {
+                    trackBtn.addEventListener('click', () => this.trackShipment());
+                }
+
+                const trackingNumber = document.getElementById('tracking-number');
+                if (trackingNumber) {
+                    trackingNumber.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.trackShipment();
+                        }
+                    });
+                }
+            },
+
+            selectTemplate(templateId) {
+                const template = this.trackingTemplates[templateId];
+                if (!template) return;
+
+                showToast(`Selected template: ${template.name}`, 'success');
+                
+                // You can add logic here to populate tracking form with template data
+                // or navigate to a specific tracking interface
+            },
+
+            async trackShipment() {
+                const carrier = document.getElementById('tracking-carrier').value;
+                const trackingNumber = document.getElementById('tracking-number').value;
+
+                if (!carrier || !trackingNumber) {
+                    showToast('Please select a carrier and enter a tracking number', 'error');
+                    return;
+                }
+
+                showToast('Tracking shipment...', 'info');
+
+                try {
+                    const trackingData = await this.fetchTrackingData(carrier, trackingNumber);
+                    this.displayTrackingResults(trackingData);
+                    
+                    // Add to active shipments if not already tracked
+                    this.addToActiveShipments(trackingData, carrier);
+                } catch (error) {
+                    console.error('Tracking error:', error);
+                    showToast('Unable to track shipment. Please try again.', 'error');
+                }
+            },
+
+            async fetchTrackingData(carrier, trackingNumber) {
+                // For now, return mock data
+                // In production, this would call actual carrier APIs
+                const mockData = {
+                    trackingNumber: trackingNumber,
+                    carrier: carrier.toUpperCase(),
+                    status: 'In Transit',
+                    location: 'Port of Singapore',
+                    vessel: 'MSC AMSTERDAM',
+                    eta: '2025-01-15',
+                    progress: 65,
+                    events: [
+                        { date: '2025-01-01', location: 'Shanghai, China', event: 'Container loaded on vessel', status: 'completed' },
+                        { date: '2025-01-05', location: 'Hong Kong', event: 'Vessel departed', status: 'completed' },
+                        { date: '2025-01-10', location: 'Singapore', event: 'Vessel arrived', status: 'completed' },
+                        { date: '2025-01-12', location: 'Singapore', event: 'Container in transit', status: 'current' },
+                        { date: '2025-01-15', location: 'Durban, South Africa', event: 'Estimated arrival', status: 'pending' }
+                    ]
+                };
+
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                return mockData;
+            },
+
+            displayTrackingResults(data) {
+                const resultsDiv = document.getElementById('tracking-results');
+                const detailsDiv = document.getElementById('tracking-details');
+                
+                if (!resultsDiv || !detailsDiv) return;
+
+                detailsDiv.innerHTML = `
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg mb-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">${data.trackingNumber}</h3>
+                                <p class="text-sm text-gray-600">${data.carrier} • ${data.vessel}</p>
+                            </div>
+                            <span class="px-3 py-1 text-sm rounded-full ${this.getStatusColor(data.status)}">${data.status}</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <p class="text-xs text-gray-500">Current Location</p>
+                                <p class="font-medium">${data.location}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Estimated Arrival</p>
+                                <p class="font-medium">${data.eta}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Progress</p>
+                                <div class="flex items-center">
+                                    <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: ${data.progress}%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium">${data.progress}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h4 class="font-medium text-gray-800">Tracking Events</h4>
+                        <div class="space-y-3">
+                            ${data.events.map(event => `
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex-shrink-0 w-3 h-3 rounded-full mt-1 ${
+                                        event.status === 'completed' ? 'bg-green-500' :
+                                        event.status === 'current' ? 'bg-blue-500' :
+                                        'bg-gray-300'
+                                    }"></div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-800">${event.event}</p>
+                                                <p class="text-xs text-gray-500">${event.location}</p>
+                                            </div>
+                                            <span class="text-xs text-gray-500">${event.date}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 class="font-medium text-blue-800 mb-2">📊 Costing Integration</h4>
+                        <p class="text-sm text-blue-700 mb-3">Use this tracking data to enhance your cost calculations:</p>
+                        <div class="flex space-x-3">
+                            <button onclick="ShipmentTracker.populateCostingFromTracking(${JSON.stringify(data).replace(/"/g, '&quot;')})" 
+                                    class="btn bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                                📋 Populate Costing
+                            </button>
+                            <button onclick="App.switchPage('cost-generator-page')" 
+                                    class="btn bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                                💰 Create Quote
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                resultsDiv.style.display = 'block';
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            },
+
+            getStatusColor(status) {
+                const colors = {
+                    'In Transit': 'bg-blue-100 text-blue-800',
+                    'Delivered': 'bg-green-100 text-green-800',
+                    'Delayed': 'bg-yellow-100 text-yellow-800',
+                    'At Port': 'bg-purple-100 text-purple-800',
+                    'Customs': 'bg-orange-100 text-orange-800'
+                };
+                return colors[status] || 'bg-gray-100 text-gray-800';
+            },
+
+            addToActiveShipments(trackingData, carrier) {
+                // Check if shipment already exists
+                const existingIndex = this.activeShipments.findIndex(s => s.trackingNumber === trackingData.trackingNumber);
+                
+                const shipment = {
+                    id: trackingData.trackingNumber,
+                    trackingNumber: trackingData.trackingNumber,
+                    carrier: carrier.toUpperCase(),
+                    status: trackingData.status,
+                    location: trackingData.location,
+                    route: this.extractRouteInfo(trackingData),
+                    lastUpdate: new Date().toLocaleString(),
+                    vessel: trackingData.vessel,
+                    eta: trackingData.eta,
+                    progress: trackingData.progress
+                };
+
+                if (existingIndex >= 0) {
+                    // Update existing shipment
+                    this.activeShipments[existingIndex] = shipment;
+                    showToast('Shipment updated in active list', 'success');
+                } else {
+                    // Add new shipment
+                    this.activeShipments.push(shipment);
+                    showToast('Shipment added to active tracking', 'success');
+                }
+
+                // Save to localStorage
+                this.saveActiveShipments();
+                // Refresh the display
+                this.loadActiveShipments();
+            },
+
+            saveActiveShipments() {
+                try {
+                    localStorage.setItem('nerva_active_shipments', JSON.stringify(this.activeShipments));
+                } catch (error) {
+                    console.error('Failed to save active shipments:', error);
+                }
+            },
+
+            loadActiveShipmentsFromStorage() {
+                try {
+                    const saved = localStorage.getItem('nerva_active_shipments');
+                    if (saved) {
+                        this.activeShipments = JSON.parse(saved);
+                    }
+                } catch (error) {
+                    console.error('Failed to load active shipments:', error);
+                    this.activeShipments = [];
+                }
+            },
+
+            removeActiveShipment(shipmentId) {
+                const index = this.activeShipments.findIndex(s => s.id === shipmentId);
+                if (index >= 0) {
+                    this.activeShipments.splice(index, 1);
+                    this.saveActiveShipments();
+                    this.loadActiveShipments();
+                    showToast('Shipment removed from active tracking', 'success');
+                }
+            },
+
+            async refreshShipment(shipmentId) {
+                showToast('Refreshing shipment data...', 'info');
+                
+                const shipment = this.activeShipments.find(s => s.id === shipmentId);
+                if (!shipment) return;
+
+                try {
+                    // Re-fetch tracking data
+                    const updatedData = await this.fetchTrackingData(shipment.carrier.toLowerCase(), shipment.trackingNumber);
+                    
+                    // Update the shipment
+                    this.addToActiveShipments(updatedData, shipment.carrier);
+                    
+                    showToast('Shipment data refreshed', 'success');
+                } catch (error) {
+                    console.error('Refresh error:', error);
+                    showToast('Failed to refresh shipment data', 'error');
+                }
+            },
+
+            // --- COSTING INTEGRATION METHODS ---
+            linkTrackingToQuote(trackingNumber, quoteId) {
+                // Link tracking information to existing quote
+                const tracking = this.activeShipments.find(s => s.trackingNumber === trackingNumber);
+                if (tracking) {
+                    tracking.linkedQuote = quoteId;
+                    showToast('Tracking linked to quote successfully', 'success');
+                    this.updateCostingBasedOnTracking(tracking);
+                }
+            },
+
+            updateCostingBasedOnTracking(tracking) {
+                if (!tracking.linkedQuote) return;
+
+                // Calculate potential cost impacts based on tracking status
+                const costImpacts = this.calculateCostImpacts(tracking);
+                
+                if (costImpacts.length > 0) {
+                    this.showCostingUpdates(costImpacts);
+                }
+            },
+
+            calculateCostImpacts(tracking) {
+                const impacts = [];
+                
+                // Check for delays
+                if (tracking.status === 'Delayed') {
+                    impacts.push({
+                        type: 'delay',
+                        description: 'Shipment delayed - potential demurrage costs',
+                        estimatedCost: 500, // USD per day
+                        severity: 'high'
+                    });
+                }
+                
+                // Check for customs hold
+                if (tracking.status === 'Customs') {
+                    impacts.push({
+                        type: 'customs',
+                        description: 'Customs clearance required - additional fees may apply',
+                        estimatedCost: 200,
+                        severity: 'medium'
+                    });
+                }
+                
+                // Check for port congestion
+                if (tracking.location.includes('Port') && tracking.status === 'At Port') {
+                    impacts.push({
+                        type: 'port_congestion',
+                        description: 'Port congestion detected - storage charges may apply',
+                        estimatedCost: 100,
+                        severity: 'medium'
+                    });
+                }
+                
+                return impacts;
+            },
+
+            showCostingUpdates(impacts) {
+                // Create a notification showing cost impacts
+                const impactSummary = impacts.map(impact => 
+                    `${impact.description}: +$${impact.estimatedCost}`
+                ).join('\n');
+                
+                showToast(`Cost Impact Alert:\n${impactSummary}`, 'warning');
+                
+                // Add a button to update the costing automatically
+                this.addCostingUpdateButton(impacts);
+            },
+
+            addCostingUpdateButton(impacts) {
+                const trackingResults = document.getElementById('tracking-results');
+                if (!trackingResults) return;
+                
+                const updateButton = document.createElement('div');
+                updateButton.className = 'mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg';
+                updateButton.innerHTML = `
+                    <h4 class="font-medium text-yellow-800 mb-2">⚠️ Cost Impact Detected</h4>
+                    <p class="text-sm text-yellow-700 mb-3">Based on tracking data, additional costs may apply:</p>
+                    <ul class="text-sm text-yellow-700 mb-3 space-y-1">
+                        ${impacts.map(impact => `<li>• ${impact.description}: +$${impact.estimatedCost}</li>`).join('')}
+                    </ul>
+                    <button onclick="ShipmentTracker.applyCostingUpdates(${JSON.stringify(impacts).replace(/"/g, '&quot;')})" 
+                            class="btn bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700">
+                        Update Costing
+                    </button>
+                `;
+                
+                trackingResults.appendChild(updateButton);
+            },
+
+            applyCostingUpdates(impacts) {
+                // Apply the cost updates to the current costing calculation
+                impacts.forEach(impact => {
+                    switch(impact.type) {
+                        case 'delay':
+                            this.addDelayCharges(impact.estimatedCost);
+                            break;
+                        case 'customs':
+                            this.addCustomsCharges(impact.estimatedCost);
+                            break;
+                        case 'port_congestion':
+                            this.addStorageCharges(impact.estimatedCost);
+                            break;
+                    }
+                });
+                
+                showToast('Costing updated based on tracking data', 'success');
+                
+                // Switch to cost generator page to show updates
+                App.switchPage('cost-generator-page');
+            },
+
+            addDelayCharges(amount) {
+                // Add demurrage charges to the costing
+                const demurrageInput = document.querySelector('#ocean-freight-section input[data-field="demurrage"]');
+                if (demurrageInput) {
+                    const currentValue = parseFloat(demurrageInput.value) || 0;
+                    demurrageInput.value = currentValue + amount;
+                    demurrageInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            },
+
+            addCustomsCharges(amount) {
+                // Add customs clearance charges
+                const customsInput = document.querySelector('#destination-charges-section input[data-field="customsClearance"]');
+                if (customsInput) {
+                    const currentValue = parseFloat(customsInput.value) || 0;
+                    customsInput.value = currentValue + amount;
+                    customsInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            },
+
+            addStorageCharges(amount) {
+                // Add storage charges
+                const storageInput = document.querySelector('#destination-charges-section input[data-field="storage"]');
+                if (storageInput) {
+                    const currentValue = parseFloat(storageInput.value) || 0;
+                    storageInput.value = currentValue + amount;
+                    storageInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            },
+
+            // Method to auto-populate costing from tracking data
+            populateCostingFromTracking(trackingData) {
+                // Extract relevant information from tracking data
+                const route = this.extractRouteInfo(trackingData);
+                const vessel = trackingData.vessel;
+                const eta = trackingData.eta;
+                
+                // Populate shipment details
+                if (route.origin) {
+                    const originInput = document.querySelector('#shipment-details input[data-field="origin"]');
+                    if (originInput && !originInput.value) {
+                        originInput.value = route.origin;
+                        originInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }
+                
+                if (route.destination) {
+                    const destinationInput = document.querySelector('#shipment-details input[data-field="destination"]');
+                    if (destinationInput && !destinationInput.value) {
+                        destinationInput.value = route.destination;
+                        destinationInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }
+                
+                // Set estimated delivery date
+                if (eta) {
+                    const etaInput = document.querySelector('#shipment-details input[data-field="eta"]');
+                    if (etaInput) {
+                        etaInput.value = eta;
+                        etaInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }
+                
+                showToast('Costing populated from tracking data', 'success');
+            },
+
+            viewShipmentDetails(shipmentId) {
+                const shipment = this.activeShipments.find(s => s.id === shipmentId);
+                if (!shipment) return;
+
+                // Simulate loading the tracking details
+                this.fetchTrackingData(shipment.carrier.toLowerCase(), shipment.trackingNumber)
+                    .then(data => this.displayTrackingResults(data))
+                    .catch(error => showToast('Failed to load shipment details', 'error'));
+            },
+
+            extractRouteInfo(trackingData) {
+                // Extract origin and destination from tracking events
+                const events = trackingData.events || [];
+                const firstEvent = events[0];
+                const lastEvent = events[events.length - 1];
+                
+                return {
+                    origin: firstEvent?.location || 'Unknown Origin',
+                    destination: lastEvent?.location || 'Unknown Destination'
+                };
+            }
+        };
+
+        // --- VESSEL SCHEDULE SYSTEM ---
+        const VesselScheduler = {
+            scheduleData: [],
+            filteredData: [],
+            activeCarrierFilter: 'all',
+
+            // Mock schedule data - in production this would come from real APIs
+            mockSchedules: [
+                {
+                    id: 'MSC_AMSTERDAM_20250115',
+                    carrier: 'MSC',
+                    vessel: 'MSC AMSTERDAM',
+                    service: 'Silk Service',
+                    origin: 'CNSHA',
+                    originName: 'Shanghai, China',
+                    destination: 'ZADUR',
+                    destinationName: 'Durban, South Africa',
+                    departure: '2025-01-15T14:00:00Z',
+                    arrival: '2025-02-05T08:00:00Z',
+                    transitTime: 21,
+                    frequency: 'Weekly',
+                    cutOff: '2025-01-13T12:00:00Z',
+                    vesselSize: '14,000 TEU',
+                    status: 'Confirmed',
+                    ports: [
+                        { port: 'CNSHA', name: 'Shanghai', arrival: null, departure: '2025-01-15T14:00:00Z' },
+                        { port: 'CNNGB', name: 'Ningbo', arrival: '2025-01-16T08:00:00Z', departure: '2025-01-16T18:00:00Z' },
+                        { port: 'SGSIN', name: 'Singapore', arrival: '2025-01-22T12:00:00Z', departure: '2025-01-23T06:00:00Z' },
+                        { port: 'ZADUR', name: 'Durban', arrival: '2025-02-05T08:00:00Z', departure: null }
+                    ]
+                },
+                {
+                    id: 'MAERSK_CAPE_TOWN_20250118',
+                    carrier: 'Maersk',
+                    vessel: 'MAERSK CAPE TOWN',
+                    service: 'AE7/EA7',
+                    origin: 'NLRTM',
+                    originName: 'Rotterdam, Netherlands',
+                    destination: 'ZACPT',
+                    destinationName: 'Cape Town, South Africa',
+                    departure: '2025-01-18T16:00:00Z',
+                    arrival: '2025-02-02T10:00:00Z',
+                    transitTime: 15,
+                    frequency: 'Weekly',
+                    cutOff: '2025-01-16T15:00:00Z',
+                    vesselSize: '18,000 TEU',
+                    status: 'Confirmed',
+                    ports: [
+                        { port: 'NLRTM', name: 'Rotterdam', arrival: null, departure: '2025-01-18T16:00:00Z' },
+                        { port: 'DEHAM', name: 'Hamburg', arrival: '2025-01-19T08:00:00Z', departure: '2025-01-19T20:00:00Z' },
+                        { port: 'GBFXT', name: 'Felixstowe', arrival: '2025-01-21T06:00:00Z', departure: '2025-01-21T14:00:00Z' },
+                        { port: 'ZACPT', name: 'Cape Town', arrival: '2025-02-02T10:00:00Z', departure: null }
+                    ]
+                },
+                {
+                    id: 'CMA_CGM_DURBAN_20250120',
+                    carrier: 'CMA CGM',
+                    vessel: 'CMA CGM BOUGAINVILLE',
+                    service: 'FAL1',
+                    origin: 'CNSHA',
+                    originName: 'Shanghai, China',
+                    destination: 'ZADUR',
+                    destinationName: 'Durban, South Africa',
+                    departure: '2025-01-20T12:00:00Z',
+                    arrival: '2025-02-12T14:00:00Z',
+                    transitTime: 23,
+                    frequency: 'Weekly',
+                    cutOff: '2025-01-18T10:00:00Z',
+                    vesselSize: '16,000 TEU',
+                    status: 'Confirmed',
+                    ports: [
+                        { port: 'CNSHA', name: 'Shanghai', arrival: null, departure: '2025-01-20T12:00:00Z' },
+                        { port: 'HKHKG', name: 'Hong Kong', arrival: '2025-01-22T16:00:00Z', departure: '2025-01-23T02:00:00Z' },
+                        { port: 'SGSIN', name: 'Singapore', arrival: '2025-01-26T20:00:00Z', departure: '2025-01-27T08:00:00Z' },
+                        { port: 'ZADUR', name: 'Durban', arrival: '2025-02-12T14:00:00Z', departure: null }
+                    ]
+                },
+                {
+                    id: 'HAPAG_LLOYD_20250122',
+                    carrier: 'Hapag-Lloyd',
+                    vessel: 'HAMBURG EXPRESS',
+                    service: 'AS1',
+                    origin: 'DEHAM',
+                    originName: 'Hamburg, Germany',
+                    destination: 'ZADUR',
+                    destinationName: 'Durban, South Africa',
+                    departure: '2025-01-22T20:00:00Z',
+                    arrival: '2025-02-08T12:00:00Z',
+                    transitTime: 17,
+                    frequency: 'Weekly',
+                    cutOff: '2025-01-20T16:00:00Z',
+                    vesselSize: '13,500 TEU',
+                    status: 'Confirmed',
+                    ports: [
+                        { port: 'DEHAM', name: 'Hamburg', arrival: null, departure: '2025-01-22T20:00:00Z' },
+                        { port: 'NLRTM', name: 'Rotterdam', arrival: '2025-01-23T14:00:00Z', departure: '2025-01-24T02:00:00Z' },
+                        { port: 'GBFXT', name: 'Felixstowe', arrival: '2025-01-25T10:00:00Z', departure: '2025-01-25T18:00:00Z' },
+                        { port: 'ZADUR', name: 'Durban', arrival: '2025-02-08T12:00:00Z', departure: null }
+                    ]
+                },
+                {
+                    id: 'COSCO_SINGAPORE_20250125',
+                    carrier: 'COSCO',
+                    vessel: 'COSCO SINGAPORE',
+                    service: 'ASF',
+                    origin: 'CNSHA',
+                    originName: 'Shanghai, China',
+                    destination: 'ZACPT',
+                    destinationName: 'Cape Town, South Africa',
+                    departure: '2025-01-25T08:00:00Z',
+                    arrival: '2025-02-18T16:00:00Z',
+                    transitTime: 24,
+                    frequency: 'Weekly',
+                    cutOff: '2025-01-23T14:00:00Z',
+                    vesselSize: '12,500 TEU',
+                    status: 'Confirmed',
+                    ports: [
+                        { port: 'CNSHA', name: 'Shanghai', arrival: null, departure: '2025-01-25T08:00:00Z' },
+                        { port: 'CNQIN', name: 'Qingdao', arrival: '2025-01-26T12:00:00Z', departure: '2025-01-27T00:00:00Z' },
+                        { port: 'KRPUS', name: 'Busan', arrival: '2025-01-28T16:00:00Z', departure: '2025-01-29T04:00:00Z' },
+                        { port: 'SGSIN', name: 'Singapore', arrival: '2025-02-02T08:00:00Z', departure: '2025-02-03T00:00:00Z' },
+                        { port: 'ZACPT', name: 'Cape Town', arrival: '2025-02-18T16:00:00Z', departure: null }
+                    ]
+                }
+            ],
+
+            popularRoutes: [
+                { route: 'Shanghai → Durban', searches: 1250, avgTransit: '21 days' },
+                { route: 'Rotterdam → Cape Town', searches: 890, avgTransit: '15 days' },
+                { route: 'Hamburg → Durban', searches: 750, avgTransit: '17 days' },
+                { route: 'Singapore → Durban', searches: 650, avgTransit: '18 days' },
+                { route: 'Hong Kong → Cape Town', searches: 540, avgTransit: '22 days' },
+                { route: 'Ningbo → Port Elizabeth', searches: 420, avgTransit: '20 days' }
+            ],
+
+            init() {
+                this.scheduleData = [...this.mockSchedules];
+                this.filteredData = [...this.scheduleData];
+                this.loadPopularRoutes();
+                this.loadLiveUpdates();
+                this.bindScheduleEvents();
+                this.generateMoreSchedules();
+            },
+
+            bindScheduleEvents() {
+                const searchBtn = document.getElementById('search-schedules-btn');
+                if (searchBtn) {
+                    searchBtn.addEventListener('click', () => this.searchSchedules());
+                }
+
+                // Carrier filter buttons
+                document.querySelectorAll('.carrier-filter').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.filterByCarrier(e.target.dataset.carrier));
+                });
+
+                // Enter key search
+                ['schedule-origin', 'schedule-destination'].forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('change', () => this.searchSchedules());
+                    }
+                });
+            },
+
+            generateMoreSchedules() {
+                // Generate additional mock schedules for different routes
+                const carriers = ['MSC', 'Maersk', 'CMA CGM', 'Hapag-Lloyd', 'COSCO', 'Evergreen', 'OOCL'];
+                const origins = [
+                    { code: 'CNSHA', name: 'Shanghai, China' },
+                    { code: 'CNNGB', name: 'Ningbo, China' },
+                    { code: 'SGSIN', name: 'Singapore' },
+                    { code: 'NLRTM', name: 'Rotterdam, Netherlands' },
+                    { code: 'DEHAM', name: 'Hamburg, Germany' },
+                    { code: 'USNYC', name: 'New York, USA' }
+                ];
+                const destinations = [
+                    { code: 'ZADUR', name: 'Durban, South Africa' },
+                    { code: 'ZACPT', name: 'Cape Town, South Africa' },
+                    { code: 'ZAELZ', name: 'Port Elizabeth, South Africa' }
+                ];
+
+                for (let i = 0; i < 20; i++) {
+                    const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+                    const origin = origins[Math.floor(Math.random() * origins.length)];
+                    const destination = destinations[Math.floor(Math.random() * destinations.length)];
+                    
+                    const departureDate = new Date();
+                    departureDate.setDate(departureDate.getDate() + Math.floor(Math.random() * 30) + 5);
+                    
+                    const transitTime = Math.floor(Math.random() * 15) + 10;
+                    const arrivalDate = new Date(departureDate);
+                    arrivalDate.setDate(arrivalDate.getDate() + transitTime);
+
+                    this.scheduleData.push({
+                        id: `${carrier}_${origin.code}_${destination.code}_${departureDate.getTime()}`,
+                        carrier: carrier,
+                        vessel: `${carrier} ${this.generateVesselName()}`,
+                        service: `${carrier}${Math.floor(Math.random() * 10) + 1}`,
+                        origin: origin.code,
+                        originName: origin.name,
+                        destination: destination.code,
+                        destinationName: destination.name,
+                        departure: departureDate.toISOString(),
+                        arrival: arrivalDate.toISOString(),
+                        transitTime: transitTime,
+                        frequency: 'Weekly',
+                        cutOff: new Date(departureDate.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                        vesselSize: `${Math.floor(Math.random() * 10000) + 8000} TEU`,
+                        status: 'Confirmed'
+                    });
+                }
+
+                this.filteredData = [...this.scheduleData];
+            },
+
+            generateVesselName() {
+                const names = ['NAVIGATOR', 'EXPLORER', 'PIONEER', 'VOYAGER', 'CHAMPION', 'EXPRESS', 'GLORY', 'STAR', 'PEARL', 'DIAMOND'];
+                return names[Math.floor(Math.random() * names.length)];
+            },
+
+            searchSchedules() {
+                const origin = document.getElementById('schedule-origin').value;
+                const destination = document.getElementById('schedule-destination').value;
+                const timeframe = parseInt(document.getElementById('schedule-timeframe').value);
+
+                if (!origin || !destination) {
+                    showToast('Please select both origin and destination ports', 'error');
+                    return;
+                }
+
+                showToast('Searching schedules...', 'info');
+
+                // Filter schedules
+                this.filteredData = this.scheduleData.filter(schedule => {
+                    const matchesRoute = schedule.origin === origin && schedule.destination === destination;
+                    const departureDate = new Date(schedule.departure);
+                    const now = new Date();
+                    const maxDate = new Date();
+                    maxDate.setDate(now.getDate() + timeframe);
+                    const isInTimeframe = departureDate >= now && departureDate <= maxDate;
+                    
+                    return matchesRoute && isInTimeframe;
+                });
+
+                this.applyCarrierFilter();
+                this.displayScheduleResults();
+            },
+
+            filterByCarrier(carrier) {
+                this.activeCarrierFilter = carrier;
+                
+                // Update filter button states
+                document.querySelectorAll('.carrier-filter').forEach(btn => {
+                    btn.classList.remove('active', 'bg-blue-100', 'text-blue-800');
+                    btn.classList.add('bg-gray-100', 'text-gray-800');
+                });
+                
+                document.querySelector(`[data-carrier="${carrier}"]`).classList.add('active', 'bg-blue-100', 'text-blue-800');
+                document.querySelector(`[data-carrier="${carrier}"]`).classList.remove('bg-gray-100', 'text-gray-800');
+
+                this.applyCarrierFilter();
+                this.displayScheduleResults();
+            },
+
+            applyCarrierFilter() {
+                if (this.activeCarrierFilter === 'all') return;
+                
+                this.filteredData = this.filteredData.filter(schedule => 
+                    schedule.carrier.toLowerCase().replace(/[^a-z]/g, '') === this.activeCarrierFilter.toLowerCase().replace(/[^a-z]/g, '')
+                );
+            },
+
+            displayScheduleResults() {
+                const resultsDiv = document.getElementById('schedule-results');
+                const listDiv = document.getElementById('schedule-list');
+                const countSpan = document.getElementById('results-count');
+
+                if (!resultsDiv || !listDiv || !countSpan) return;
+
+                countSpan.textContent = `${this.filteredData.length} schedules found`;
+
+                if (this.filteredData.length === 0) {
+                    listDiv.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <p class="mt-2 text-sm">No schedules found for this route</p>
+                            <p class="text-xs text-gray-400">Try different ports or timeframe</p>
+                        </div>
+                    `;
+                } else {
+                    listDiv.innerHTML = this.filteredData.map(schedule => this.renderScheduleCard(schedule)).join('');
+                }
+
+                resultsDiv.style.display = 'block';
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            },
+
+            renderScheduleCard(schedule) {
+                const departure = new Date(schedule.departure);
+                const arrival = new Date(schedule.arrival);
+                const cutOff = new Date(schedule.cutOff);
+
+                return `
+                    <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow bg-white">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full ${this.getCarrierColor(schedule.carrier)}">${schedule.carrier}</span>
+                                    <span class="text-sm font-medium text-gray-800">${schedule.vessel}</span>
+                                    <span class="text-xs text-gray-500">${schedule.service}</span>
+                                </div>
+                                <div class="text-lg font-semibold text-gray-800">
+                                    ${schedule.originName} → ${schedule.destinationName}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-600">${schedule.transitTime} days</div>
+                                <div class="text-xs text-gray-500">${schedule.vesselSize}</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">Departure</div>
+                                <div class="font-medium">${departure.toLocaleDateString()}</div>
+                                <div class="text-sm text-gray-600">${departure.toLocaleTimeString()}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">Arrival</div>
+                                <div class="font-medium">${arrival.toLocaleDateString()}</div>
+                                <div class="text-sm text-gray-600">${arrival.toLocaleTimeString()}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">Cut-off</div>
+                                <div class="font-medium">${cutOff.toLocaleDateString()}</div>
+                                <div class="text-sm text-gray-600">${cutOff.toLocaleTimeString()}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-3 border-t">
+                            <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                <span>📅 ${schedule.frequency}</span>
+                                <span>✅ ${schedule.status}</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="VesselScheduler.selectSchedule('${schedule.id}')" 
+                                        class="btn bg-green-600 text-white px-4 py-2 text-sm rounded-md hover:bg-green-700">
+                                    💰 Get Quote
+                                </button>
+                                <button onclick="VesselScheduler.viewScheduleDetails('${schedule.id}')" 
+                                        class="btn bg-blue-600 text-white px-4 py-2 text-sm rounded-md hover:bg-blue-700">
+                                    👁️ Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            getCarrierColor(carrier) {
+                const colors = {
+                    'MSC': 'bg-blue-100 text-blue-800',
+                    'Maersk': 'bg-cyan-100 text-cyan-800',
+                    'CMA CGM': 'bg-red-100 text-red-800',
+                    'Hapag-Lloyd': 'bg-orange-100 text-orange-800',
+                    'COSCO': 'bg-purple-100 text-purple-800',
+                    'Evergreen': 'bg-green-100 text-green-800',
+                    'OOCL': 'bg-pink-100 text-pink-800'
+                };
+                return colors[carrier] || 'bg-gray-100 text-gray-800';
+            },
+
+            loadPopularRoutes() {
+                const routesGrid = document.getElementById('popular-routes-grid');
+                if (!routesGrid) return;
+
+                routesGrid.innerHTML = this.popularRoutes.map(route => `
+                    <div class="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                         onclick="VesselScheduler.selectPopularRoute('${route.route}')">
+                        <h4 class="font-medium text-gray-800 mb-2">${route.route}</h4>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>🔍 ${route.searches} searches</span>
+                            <span>⏱️ ${route.avgTransit}</span>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            loadLiveUpdates() {
+                const updatesDiv = document.getElementById('live-updates');
+                if (!updatesDiv) return;
+
+                const updates = [
+                    { time: '2 mins ago', message: 'MSC AMSTERDAM departed Shanghai on schedule', type: 'departure' },
+                    { time: '15 mins ago', message: 'MAERSK CAPE TOWN delayed 4 hours at Hamburg', type: 'delay' },
+                    { time: '32 mins ago', message: 'New weekly service: CMA CGM FAL2 Shanghai-Durban', type: 'new' },
+                    { time: '1 hour ago', message: 'COSCO SINGAPORE arrived Singapore ahead of schedule', type: 'arrival' },
+                    { time: '2 hours ago', message: 'Cut-off extended for HAPAG EXPRESS to Jan 21, 18:00', type: 'cutoff' }
+                ];
+
+                updatesDiv.innerHTML = updates.map(update => `
+                    <div class="flex items-start space-x-3 p-3 border rounded-lg">
+                        <div class="flex-shrink-0 w-2 h-2 rounded-full mt-2 ${this.getUpdateColor(update.type)}"></div>
+                        <div class="flex-1">
+                            <p class="text-sm text-gray-800">${update.message}</p>
+                            <p class="text-xs text-gray-500">${update.time}</p>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            getUpdateColor(type) {
+                const colors = {
+                    'departure': 'bg-green-500',
+                    'arrival': 'bg-blue-500',
+                    'delay': 'bg-red-500',
+                    'new': 'bg-purple-500',
+                    'cutoff': 'bg-yellow-500'
+                };
+                return colors[type] || 'bg-gray-500';
+            },
+
+            selectPopularRoute(route) {
+                const [origin, destination] = route.split(' → ');
+                
+                // Map display names to port codes
+                const portMap = {
+                    'Shanghai': 'CNSHA',
+                    'Durban': 'ZADUR',
+                    'Rotterdam': 'NLRTM',
+                    'Cape Town': 'ZACPT',
+                    'Hamburg': 'DEHAM',
+                    'Singapore': 'SGSIN',
+                    'Hong Kong': 'HKHKG',
+                    'Port Elizabeth': 'ZAELZ'
+                };
+
+                const originSelect = document.getElementById('schedule-origin');
+                const destinationSelect = document.getElementById('schedule-destination');
+
+                if (originSelect && destinationSelect) {
+                    originSelect.value = portMap[origin] || '';
+                    destinationSelect.value = portMap[destination] || '';
+                    this.searchSchedules();
+                }
+            },
+
+            selectSchedule(scheduleId) {
+                const schedule = this.scheduleData.find(s => s.id === scheduleId);
+                if (!schedule) return;
+
+                // Populate costing form with schedule data
+                this.populateCostingFromSchedule(schedule);
+                
+                showToast('Schedule selected - creating quote...', 'success');
+                App.switchPage('cost-generator-page');
+            },
+
+            populateCostingFromSchedule(schedule) {
+                // Populate origin and destination
+                const originInput = document.querySelector('#shipment-details input[data-field="pol"]');
+                const destinationInput = document.querySelector('#shipment-details input[data-field="pod"]');
+                
+                if (originInput) {
+                    originInput.value = schedule.originName;
+                    originInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                
+                if (destinationInput) {
+                    destinationInput.value = schedule.destinationName;
+                    destinationInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+
+                // Set estimated transit time
+                const transitInput = document.querySelector('#shipment-details input[data-field="transitTime"]');
+                if (transitInput) {
+                    transitInput.value = schedule.transitTime;
+                    transitInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+
+                // Set departure date
+                const departureInput = document.querySelector('#shipment-details input[data-field="etd"]');
+                if (departureInput) {
+                    const departureDate = new Date(schedule.departure);
+                    departureInput.value = departureDate.toISOString().split('T')[0];
+                    departureInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            },
+
+            viewScheduleDetails(scheduleId) {
+                const schedule = this.scheduleData.find(s => s.id === scheduleId);
+                if (!schedule) return;
+
+                // Create detailed modal or expand card with port rotation
+                showToast(`Viewing details for ${schedule.vessel}`, 'info');
+                // Implementation for detailed view would go here
+            }
+        };
+
+        // --- AUTHENTICATION SYSTEM ---
+        const AuthSystem = {
+            currentUser: null,
+            isAuthenticated: false,
+
+            init() {
+                this.bindAuthEvents();
+                this.checkAuthState();
+            },
+
+            bindAuthEvents() {
+                // Tab switching
+                document.getElementById('login-tab').addEventListener('click', () => this.switchTab('login'));
+                document.getElementById('register-tab').addEventListener('click', () => this.switchTab('register'));
+
+                // Form submissions
+                document.getElementById('login-form').addEventListener('submit', (e) => this.handleLogin(e));
+                document.getElementById('register-form').addEventListener('submit', (e) => this.handleRegister(e));
+
+                // Demo access
+                document.getElementById('demo-access-btn').addEventListener('click', () => this.accessDemo());
+
+                // Social login
+                document.getElementById('google-login-btn').addEventListener('click', () => this.handleGoogleLogin());
+            },
+
+            switchTab(tab) {
+                const loginTab = document.getElementById('login-tab');
+                const registerTab = document.getElementById('register-tab');
+                const loginForm = document.getElementById('login-form');
+                const registerForm = document.getElementById('register-form');
+
+                if (tab === 'login') {
+                    loginTab.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                    loginTab.classList.remove('text-gray-500');
+                    registerTab.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                    registerTab.classList.add('text-gray-500');
+                    
+                    loginForm.style.display = 'block';
+                    registerForm.style.display = 'none';
+                } else {
+                    registerTab.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                    registerTab.classList.remove('text-gray-500');
+                    loginTab.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                    loginTab.classList.add('text-gray-500');
+                    
+                    registerForm.style.display = 'block';
+                    loginForm.style.display = 'none';
+                }
+            },
+
+            async handleLogin(e) {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const loginBtn = document.getElementById('login-btn');
+
+                try {
+                    loginBtn.disabled = true;
+                    loginBtn.textContent = 'Signing In...';
+
+                    // For now, simulate authentication
+                    await this.simulateAuth();
+                    
+                    this.currentUser = {
+                        email: email,
+                        name: email.split('@')[0],
+                        company: 'Demo Company',
+                        id: 'user_' + Date.now()
+                    };
+
+                    this.isAuthenticated = true;
+                    localStorage.setItem('nerva_user', JSON.stringify(this.currentUser));
+                    localStorage.setItem('nerva_auth', 'true');
+
+                    showToast('Welcome back! 🎉', 'success');
+                    this.hideAuthOverlay();
+
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showToast('Login failed. Please try again.', 'error');
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                }
+            },
+
+            async handleRegister(e) {
+                e.preventDefault();
+                const firstName = document.getElementById('register-firstname').value;
+                const lastName = document.getElementById('register-lastname').value;
+                const company = document.getElementById('register-company').value;
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                const registerBtn = document.getElementById('register-btn');
+
+                try {
+                    registerBtn.disabled = true;
+                    registerBtn.textContent = 'Creating Account...';
+
+                    // For now, simulate registration
+                    await this.simulateAuth();
+                    
+                    this.currentUser = {
+                        email: email,
+                        name: `${firstName} ${lastName}`,
+                        company: company || 'Your Company',
+                        id: 'user_' + Date.now(),
+                        firstName,
+                        lastName
+                    };
+
+                    this.isAuthenticated = true;
+                    localStorage.setItem('nerva_user', JSON.stringify(this.currentUser));
+                    localStorage.setItem('nerva_auth', 'true');
+
+                    showToast('Account created successfully! Welcome to Nerva ERP! 🚀', 'success');
+                    this.hideAuthOverlay();
+
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    showToast('Registration failed. Please try again.', 'error');
+                } finally {
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = 'Create Account';
+                }
+            },
+
+            async accessDemo() {
+                const demoBtn = document.getElementById('demo-access-btn');
+                
+                try {
+                    demoBtn.disabled = true;
+                    demoBtn.textContent = 'Loading Demo...';
+
+                    await this.simulateAuth();
+                    
+                    this.currentUser = {
+                        email: 'demo@nerva-erp.com',
+                        name: 'Demo User',
+                        company: 'Demo Company Ltd',
+                        id: 'demo_user',
+                        isDemo: true
+                    };
+
+                    this.isAuthenticated = true;
+                    localStorage.setItem('nerva_user', JSON.stringify(this.currentUser));
+                    localStorage.setItem('nerva_auth', 'demo');
+
+                    showToast('Welcome to the Nerva ERP Demo! 🎯', 'success');
+                    this.hideAuthOverlay();
+
+                } catch (error) {
+                    console.error('Demo access error:', error);
+                    showToast('Demo access failed. Please try again.', 'error');
+                } finally {
+                    demoBtn.disabled = false;
+                    demoBtn.textContent = 'Access Demo Account';
+                }
+            },
+
+            async handleGoogleLogin() {
+                const googleBtn = document.getElementById('google-login-btn');
+                
+                try {
+                    googleBtn.disabled = true;
+                    googleBtn.innerHTML = 'Connecting...';
+
+                    // Simulate Google OAuth
+                    await this.simulateAuth();
+                    
+                    this.currentUser = {
+                        email: 'user@gmail.com',
+                        name: 'Google User',
+                        company: 'Google Account',
+                        id: 'google_user_' + Date.now(),
+                        provider: 'google'
+                    };
+
+                    this.isAuthenticated = true;
+                    localStorage.setItem('nerva_user', JSON.stringify(this.currentUser));
+                    localStorage.setItem('nerva_auth', 'google');
+
+                    showToast('Successfully signed in with Google! 🎉', 'success');
+                    this.hideAuthOverlay();
+
+                } catch (error) {
+                    console.error('Google login error:', error);
+                    showToast('Google sign-in failed. Please try again.', 'error');
+                } finally {
+                    googleBtn.disabled = false;
+                    googleBtn.innerHTML = `
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google
+                    `;
+                }
+            },
+
+            checkAuthState() {
+                const authState = localStorage.getItem('nerva_auth');
+                const userData = localStorage.getItem('nerva_user');
+
+                if (authState && userData) {
+                    try {
+                        this.currentUser = JSON.parse(userData);
+                        this.isAuthenticated = true;
+                        this.hideAuthOverlay();
+                        
+                        if (this.currentUser.isDemo) {
+                            showToast('Welcome back to the demo! 🎯', 'info');
+                        } else {
+                            showToast(`Welcome back, ${this.currentUser.name}! 👋`, 'success');
+                        }
+                    } catch (error) {
+                        console.error('Error parsing stored user data:', error);
+                        this.logout();
+                    }
+                }
+            },
+
+            hideAuthOverlay() {
+                const overlay = document.getElementById('auth-overlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                }
+                
+                // Update UI with user info
+                this.updateUserUI();
+            },
+
+            showAuthOverlay() {
+                const overlay = document.getElementById('auth-overlay');
+                if (overlay) {
+                    overlay.style.display = 'flex';
+                }
+            },
+
+            updateUserUI() {
+                // Update user info in header or sidebar
+                const userInfo = document.createElement('div');
+                userInfo.className = 'border-t border-gray-200 p-3 mt-auto user-info';
+                userInfo.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-medium">${this.currentUser.name.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">${this.currentUser.name}</p>
+                            <p class="text-xs text-gray-500 truncate">${this.currentUser.company}</p>
+                        </div>
+                        <button id="logout-btn" class="text-gray-400 hover:text-gray-600 transition-colors" title="Logout">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+
+                // Find sidebar and add user info
+                const sidebar = document.querySelector('aside nav');
+                if (sidebar && !document.querySelector('.user-info')) {
+                    sidebar.parentElement.appendChild(userInfo);
+                    
+                    // Add event listener to logout button
+                    const logoutBtn = document.getElementById('logout-btn');
+                    if (logoutBtn) {
+                        logoutBtn.addEventListener('click', () => {
+                            if (confirm('Are you sure you want to logout?')) {
+                                this.logout();
+                            }
+                        });
+                    }
+                }
+            },
+
+            logout() {
+                localStorage.removeItem('nerva_auth');
+                localStorage.removeItem('nerva_user');
+                this.currentUser = null;
+                this.isAuthenticated = false;
+                
+                // Remove user UI
+                const userInfo = document.querySelector('.user-info');
+                if (userInfo) {
+                    userInfo.remove();
+                }
+                
+                showToast('You have been logged out. See you soon! 👋', 'info');
+                this.showAuthOverlay();
+            },
+
+            simulateAuth() {
+                // Simulate network delay
+                return new Promise(resolve => setTimeout(resolve, 1500));
+            }
+        };
+
         // --- CORE APP LOGIC ---
         const App = {
             db: null,
@@ -1985,21 +4648,29 @@
                 this.elements.headerButtons.innerHTML = ''; 
                 if (pageId === 'cost-generator-page') {
                     this.elements.headerButtons.innerHTML = `
-                        <button id="save-quote-button" class="btn btn-success text-white font-bold py-2 px-4 rounded-lg">
-                            💾 Save Quote
+                        <button id="save-quote-button" class="nerva-nav-item group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 border border-gray-300">
+                            <svg class="text-gray-400 mr-3 h-5 w-5 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            Save Quote
                         </button>
-                        <button id="pdf-button" class="btn btn-primary text-white font-bold py-2 px-4 rounded-lg">
-                            📄 Generate PDF
+                        <button id="pdf-button" class="nerva-nav-item group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 border border-gray-300">
+                            <svg class="text-gray-400 mr-3 h-5 w-5 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Generate PDF
                         </button>`;
                 }
                 
                 this.elements.pages.forEach(p => p.classList.toggle('active', p.id === pageId));
-                document.querySelectorAll('.sidebar-link').forEach(link => link.classList.toggle('active', link.dataset.page === pageId));
+                document.querySelectorAll('.nerva-nav-item').forEach(link => link.classList.toggle('active', link.dataset.page === pageId));
                 
                 const pageIcons = {
                     'dashboard-page': '📊 Dashboard',
                     'cost-generator-page': '💰 Cost Generator', 
-                    'cost-request-page': '📝 Cost Request'
+                    'cost-request-page': '📝 Cost Request',
+                    'tracking-page': '🚢 Shipment Tracking',
+                    'schedules-page': '🚢 Live Schedules'
                 };
                 
                 this.elements.pageTitle.textContent = pageIcons[pageId] || 'Dashboard';
@@ -2008,11 +4679,19 @@
                 if (pageId === 'dashboard-page') {
                     setTimeout(() => this.loadTemplateGrid(), 100);
                 }
+                
+                if (pageId === 'tracking-page') {
+                    setTimeout(() => ShipmentTracker.init(), 100);
+                }
+                
+                if (pageId === 'schedules-page') {
+                    setTimeout(() => VesselScheduler.init(), 100);
+                }
             },
             
             attachEventListeners() {
                 this.elements.sidebarNav.addEventListener('click', (e) => {
-                    if (e.target && e.target.matches('a.sidebar-link')) {
+                    if (e.target && e.target.matches('a.nerva-nav-item')) {
                         e.preventDefault();
                         const pageId = e.target.dataset.page;
                         if(pageId) {
@@ -2033,13 +4712,23 @@
             
             handleInitialPageLoad() {
                 const initialHash = window.location.hash.substring(1);
-                const validPages = ['dashboard', 'generator', 'request'];
+                const validPages = ['dashboard', 'generator', 'request', 'tracking', 'schedules'];
                 const initialPage = validPages.includes(initialHash) ? initialHash : 'dashboard';
                 this.switchPage(`${initialPage}-page`);
                 
                 // Load templates on dashboard
                 if (initialPage === 'dashboard') {
                     this.loadTemplateGrid();
+                }
+                
+                // Initialize tracking on tracking page
+                if (initialPage === 'tracking') {
+                    ShipmentTracker.init();
+                }
+                
+                // Initialize schedules on schedules page
+                if (initialPage === 'schedules') {
+                    VesselScheduler.init();
                 }
             },
 
@@ -2299,35 +4988,173 @@
                 }
             },
 
+            // --- SARS CUSTOMS CALCULATION INTEGRATION ---
+            async updateSARSCalculation() {
+                try {
+                    // Get import country and currency values
+                    const importCountry = document.getElementById('lc-importCountry')?.value || 'ZA';
+                    const invoiceCurrency = document.getElementById('lc-invoiceCurrency')?.value || 'USD';
+                    const customsValue = parseFloat(document.getElementById('lc-commercialInvoiceValue')?.value || '0');
+                    const hsCode = document.getElementById('lc-hsCode')?.value || '';
+                    const originCountry = document.getElementById('lc-originCountry')?.value || 'CN';
+                    const dutyRate = parseFloat(document.getElementById('lc-dutyRate')?.value || '0');
+                    const totalKg = parseFloat(document.getElementById('lc-totalKg')?.value || '1');
+                    
+                    // Calculate using the Global Customs Calculator
+                    const result = await GlobalCustomsCalculator.calculateForCountry(importCountry, {
+                        customsValue,
+                        hsCode,
+                        originCountry,
+                        dutyRate,
+                        quantity: totalKg
+                    });
+                    
+                    // Update the display with results
+                    const outputContainer = document.getElementById('landed-cost-output');
+                    if (outputContainer && result) {
+                        const currencyService = new GlobalCurrencyService();
+                        const localCurrency = currencyService.getCurrencyForCountry(importCountry);
+                        
+                        outputContainer.innerHTML = `
+                            <div class="bg-blue-50 p-3 rounded border-l-4 border-blue-400 mb-3">
+                                <div class="font-semibold text-blue-800">🌍 ${result.method}</div>
+                                <div class="text-sm text-blue-600">Calculation for ${importCountry.toUpperCase()} imports</div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Customs Value (${invoiceCurrency}):</span>
+                                    <span class="font-semibold">${currencyService.formatCurrency(customsValue, invoiceCurrency)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Customs Duty:</span>
+                                    <span class="font-semibold text-red-600">${currencyService.formatCurrency(result.customsDuty, localCurrency)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>${importCountry === 'US' ? 'Sales Tax' : importCountry === 'IN' ? 'GST' : 'VAT/Tax'}:</span>
+                                    <span class="font-semibold text-red-600">${currencyService.formatCurrency(result.vat, localCurrency)}</span>
+                                </div>
+                                <hr class="border-gray-300">
+                                <div class="flex justify-between font-bold">
+                                    <span>Total Border Taxes:</span>
+                                    <span class="text-red-600">${currencyService.formatCurrency(result.totalTaxes, localCurrency)}</span>
+                                </div>
+                                <div class="flex justify-between font-bold text-green-600">
+                                    <span>Total Landed Cost:</span>
+                                    <span>${currencyService.formatCurrency(customsValue + result.totalTaxes, localCurrency)}</span>
+                                </div>
+                                ${totalKg > 0 ? `
+                                <div class="flex justify-between text-gray-600">
+                                    <span>Cost per Kg:</span>
+                                    <span>${currencyService.formatCurrency((customsValue + result.totalTaxes) / totalKg, localCurrency)}</span>
+                                </div>
+                                ` : ''}
+                                ${result.tradeAgreement ? `
+                                <div class="bg-green-50 p-2 rounded mt-2">
+                                    <div class="text-xs text-green-700">🤝 Trade Agreement: ${result.tradeAgreement}</div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+                    
+                    // Trigger main display update
+                    setTimeout(() => this.updateDisplay(), 10);
+                    
+                } catch (error) {
+                    console.error('SARS Calculation Error:', error);
+                    const outputContainer = document.getElementById('landed-cost-output');
+                    if (outputContainer) {
+                        outputContainer.innerHTML = `
+                            <div class="bg-red-50 p-3 rounded border-l-4 border-red-400">
+                                <div class="font-semibold text-red-800">⚠️ Calculation Error</div>
+                                <div class="text-sm text-red-600">${error.message}</div>
+                            </div>
+                        `;
+                    }
+                }
+            },
+
             // --- HS CODE LOOKUP METHODS ---
-            searchHSCodes(query) {
+            handleHSCodeInput(value) {
+                this.searchHSCodes(value).catch(error => {
+                    console.error('Error searching HS codes:', error);
+                    const resultsContainer = document.getElementById('hs-search-results');
+                    if (resultsContainer) {
+                        resultsContainer.innerHTML = '<div class="p-3 text-red-500 text-sm">Error searching HS codes. Please try again.</div>';
+                        resultsContainer.classList.remove('hidden');
+                    }
+                });
+            },
+            
+            async searchHSCodes(query) {
                 const resultsContainer = document.getElementById('hs-search-results');
                 if (!resultsContainer || !query || query.length < 2) {
                     if (resultsContainer) resultsContainer.classList.add('hidden');
                     return;
                 }
 
-                const results = HSCodeDatabase.searchCodes(query);
+                // Use the complete database from GlobalCustomsCalculator
+                await GlobalCustomsCalculator.SARS.initializeDatabase();
+                const completeDatabase = GlobalCustomsCalculator.SARS.hsCodeDatabase;
                 
-                if (results.length === 0) {
+                const results = [];
+                const searchTerm = query.toLowerCase();
+                
+                if (completeDatabase) {
+                    // Search through the complete 11,217 HS code database
+                    for (const [code, data] of Object.entries(completeDatabase)) {
+                        const description = data.description || '';
+                        const searchText = `${code} ${description}`.toLowerCase();
+                        
+                        if (searchText.includes(searchTerm) || code.startsWith(query)) {
+                            // Calculate relevance score
+                            let relevance = 0;
+                            if (code.startsWith(query)) relevance += 50;
+                            if (code === query) relevance += 100;
+                            if (description.toLowerCase().includes(searchTerm)) relevance += 10;
+                            
+                            results.push({
+                                code,
+                                description: description || 'No description available',
+                                dutyRate: data.general || 0,
+                                relevance,
+                                general: data.general || 0,
+                                EU: data.EU || 0,
+                                SADC: data.SADC || 0,
+                                AfCFTA: data.AfCFTA || 0
+                            });
+                        }
+                        
+                        // Limit results to prevent performance issues
+                        if (results.length >= 50) break;
+                    }
+                }
+                
+                // Sort by relevance and code
+                const sortedResults = results.sort((a, b) => {
+                    if (b.relevance !== a.relevance) return b.relevance - a.relevance;
+                    return a.code.localeCompare(b.code);
+                }).slice(0, 12);
+                
+                if (sortedResults.length === 0) {
                     resultsContainer.innerHTML = '<div class="p-3 text-gray-500 text-sm">No HS codes found</div>';
                 } else {
-                    resultsContainer.innerHTML = results.map(result => `
+                    resultsContainer.innerHTML = sortedResults.map(result => `
                         <div class="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                              onclick="App.selectHSCode('${result.code}', '${result.description}', ${result.dutyRate})">
                             <div class="flex justify-between items-start">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
                                         <div class="font-bold text-blue-700">${result.code}</div>
-                                        ${result.chapter ? `<span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Ch. ${result.chapter}</span>` : ''}
+                                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Ch. ${result.code.substring(0,2)}</span>
                                     </div>
                                     <div class="text-sm text-gray-700 mb-2">${result.description}</div>
                                     <div class="text-xs text-gray-500 space-y-1">
-                                        <div>
-                                            <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full mr-2">${result.category}</span>
-                                            ${result.notes ? `<span class="text-gray-600">${result.notes}</span>` : ''}
+                                        <div class="flex gap-2">
+                                            <span class="text-green-600">General: ${result.general}%</span>
+                                            <span class="text-blue-600">EU: ${result.EU}%</span>
+                                            <span class="text-orange-600">SADC: ${result.SADC}%</span>
                                         </div>
-                                        <div class="text-gray-600">Examples: ${result.examples.slice(0, 2).join(', ')}</div>
                                     </div>
                                 </div>
                                 <div class="ml-3 text-right">
@@ -2862,10 +5689,10 @@
                                 <p class="text-sm text-gray-500">Quote #${quote.quoteNumber} • ${new Date(quote.createdAt).toLocaleDateString('en-GB')} <span class="text-orange-500 font-medium">(Local)</span></p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button onclick="App.loadLocalQuote('${quote.id}')" class="btn btn-primary text-white font-semibold py-2 px-4 rounded-lg">
+                                <button onclick="App.loadLocalQuote('${quote.id}')" class="btn bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
                                     📂 Load
                                 </button>
-                                <button onclick="App.deleteLocalQuote('${quote.id}')" class="btn btn-danger text-white font-semibold py-2 px-3 rounded-lg" title="Delete Local Quote">
+                                <button onclick="App.deleteLocalQuote('${quote.id}')" class="btn bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition-colors" title="Delete Local Quote">
                                     🗑️
                                 </button>
                             </div>
@@ -2949,13 +5776,39 @@
                 totals.vatOnServices = (totals.subtotalDestinationCharges + totals.subtotalClearing + totals.subtotalTransport) * VAT_RATE;
                 totals.grandTotal = totals.preVatTotal + totals.vatOnServices;
                 
-                const landed = {};
-                landed.commercialValueZAR = parseFloat(currentValues.landedCost.commercialInvoiceValue) * zarRates.usd;
-                const dutyBaseValue = landed.commercialValueZAR * 1.1;
-                landed.dutyAmount = dutyBaseValue * (parseFloat(currentValues.landedCost.dutyRate) / 100);
-                const vatBaseValue = dutyBaseValue + landed.dutyAmount;
-                landed.vatOnGoods = vatBaseValue * VAT_RATE;
-                landed.totalClearingCosts = totals.subtotalDestinationCharges + totals.subtotalClearing + totals.subtotalTransport + totals.vatOnServices;
+                // SARS-Compliant Landed Cost Calculation
+                const commercialValueUSD = parseFloat(currentValues.landedCost.commercialInvoiceValue) || 0;
+                const commercialValueZAR = commercialValueUSD * zarRates.usd;
+                const hsCode = currentValues.landedCost.hsCode || '';
+                const dutyRate = parseFloat(currentValues.landedCost.dutyRate) || 0;
+                const originCountry = currentValues.landedCost.originCountry || 'CN';
+                const tradeAgreement = currentValues.landedCost.tradeAgreement || 'general';
+                
+                // Use SARS calculation engine
+                const sarsCalculation = SARSCustomsCalculator.calculateComplete({
+                    customsValue: commercialValueZAR,
+                    hsCode: hsCode,
+                    baseDutyRate: dutyRate,
+                    originCountry: originCountry,
+                    tradeAgreement: tradeAgreement
+                });
+                
+                const landed = {
+                    commercialValueZAR: commercialValueZAR,
+                    commercialValueUSD: commercialValueUSD,
+                    dutyAmount: sarsCalculation.customsDuty,
+                    vatOnGoods: sarsCalculation.importVAT,
+                    uplift: sarsCalculation.uplift,
+                    atv: sarsCalculation.atv,
+                    isBELN: sarsCalculation.isBELN,
+                    applicableDutyRate: sarsCalculation.applicableDutyRate,
+                    tradeAgreement: tradeAgreement,
+                    originCountry: originCountry,
+                    totalClearingCosts: totals.subtotalDestinationCharges + totals.subtotalClearing + totals.subtotalTransport + totals.vatOnServices,
+                    totalBorderTaxes: sarsCalculation.totalBorderTaxes,
+                    sarsBreakdown: sarsCalculation.breakdown
+                };
+                
                 landed.totalLandedCost = landed.commercialValueZAR + landed.dutyAmount + landed.vatOnGoods + landed.totalClearingCosts;
                 const totalKg = parseFloat(currentValues.landedCost.totalKg) || 1;
                 landed.costPerKg = landed.totalLandedCost / totalKg;
@@ -3058,7 +5911,7 @@
                                                value="${item.value}" 
                                                class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 pr-8" 
                                                placeholder="Search by product or code"
-                                               oninput="App.searchHSCodes(this.value)"
+                                               oninput="App.handleHSCodeInput(this.value)"
                                                autocomplete="off">
                                         <button type="button" 
                                                 onclick="App.showHSCodeBrowser()" 
@@ -3069,12 +5922,20 @@
                                     </div>
                                     <div id="hs-search-results" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto hidden"></div>
                                 </div>`;
+                            } else if (item.type === 'select') {
+                                return `<div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label>
+                                    <select id="lc-${key}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" onchange="App.updateSARSCalculation()">
+                                        ${item.options.map(option => `<option value="${option.value}" ${option.value === item.value ? 'selected' : ''}>${option.label}</option>`).join('')}
+                                    </select>
+                                </div>`;
                             } else {
                                 const inputType = item.type === 'text' ? 'text' : 'number';
                                 const step = inputType === 'number' ? 'step="0.01"' : '';
+                                const onchange = inputType === 'number' ? 'onchange="App.updateSARSCalculation()"' : '';
                                 return `<div> 
                                     <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label> 
-                                    <input type="${inputType}" ${step} id="lc-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> 
+                                    <input type="${inputType}" ${step} id="lc-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" ${onchange}> 
                                 </div>`;
                             }
                         }).join('');
@@ -3183,10 +6044,10 @@
                                 <p class="text-sm text-gray-500">Quote #${quote.quoteNumber} • ${new Date(quote.createdAt).toLocaleDateString('en-GB')} <span class="text-green-500 font-medium">(Shared)</span></p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button onclick="App.loadQuote('${quote.id}')" class="btn btn-primary text-white font-semibold py-2 px-4 rounded-lg">
+                                <button onclick="App.loadQuote('${quote.id}')" class="btn bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
                                     📂 Load
                                 </button>
-                                <button onclick="App.deleteQuote('${quote.id}')" class="btn btn-danger text-white font-semibold py-2 px-3 rounded-lg" title="Delete Quote">
+                                <button onclick="App.deleteQuote('${quote.id}')" class="btn bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition-colors" title="Delete Quote">
                                     🗑️
                                 </button>
                             </div>
@@ -3220,10 +6081,10 @@
                                     ${req.notes ? `<p class="text-sm mt-2 italic text-gray-600"><b>📝 Notes:</b> ${req.notes}</p>` : ''}
                                 </div>
                                 <div class="flex items-center gap-2 ml-4">
-                                    <button onclick="App.generateCostFromRequest('${req.id}')" class="btn btn-success text-white font-semibold py-2 px-4 rounded-lg">
+                                    <button onclick="App.generateCostFromRequest('${req.id}')" class="btn bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
                                         🚀 Generate Cost
                                     </button>
-                                    <button onclick="App.deleteCostRequest('${req.id}')" class="btn btn-danger text-white font-semibold py-2 px-3 rounded-lg" title="Delete Request">
+                                    <button onclick="App.deleteCostRequest('${req.id}')" class="btn bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition-colors" title="Delete Request">
                                         🗑️
                                     </button>
                                 </div>
@@ -3370,6 +6231,7 @@
 
         // --- INITIALIZATION ---
         window.App = App; // Make App globally accessible
+        window.AuthSystem = AuthSystem; // Make AuthSystem globally accessible
         
         // Safe initialization with error handling
         document.addEventListener('DOMContentLoaded', function() {
@@ -3379,6 +6241,8 @@
                     'dashboard-page',
                     'cost-generator-page', 
                     'cost-request-page',
+                    'tracking-page',
+                    'schedules-page',
                     'shipment-details',
                     'origin-charges-section',
                     'exchange-rates',
@@ -3413,7 +6277,28 @@
                 }
                 
                 console.log('✅ All required elements found, initializing app...');
+                
+                // Debug navigation system
+                console.log('Debug: Pages found:', document.querySelectorAll('.page').length);
+                console.log('Debug: Sidebar nav found:', document.getElementById('sidebar-nav'));
+                
+                // Initialize authentication first
+                AuthSystem.init();
+                
                 App.init();
+                
+                // Force show the cost generator page if hash is present
+                const currentHash = window.location.hash;
+                if (currentHash === '#generator') {
+                    console.log('Debug: Forcing cost generator page to show');
+                    App.switchPage('cost-generator-page');
+                } else if (currentHash === '#request') {
+                    console.log('Debug: Forcing cost request page to show');
+                    App.switchPage('cost-request-page');
+                } else if (currentHash === '#dashboard') {
+                    console.log('Debug: Forcing dashboard page to show');
+                    App.switchPage('dashboard-page');
+                }
                 
             } catch (error) {
                 console.error('❌ App initialization failed:', error);

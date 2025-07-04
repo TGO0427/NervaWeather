@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Universal Costing App - Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .country-section { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .result { background: #e8f5e9; padding: 10px; margin: 5px 0; border-radius: 4px; }
+        input, select { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #1976D2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Universal Costing Calculator</h1>
+        <p>Test global customs calculations for any country</p>
+        
+        <div>
+            <label>Import Country:</label>
+            <select id="importCountry">
+                <option value="ZA">🇿🇦 South Africa (SARS)</option>
+                <option value="US">🇺🇸 United States (CBP)</option>
+                <option value="GB">🇬🇧 United Kingdom (HMRC)</option>
+                <option value="DE">🇩🇪 Germany (EU)</option>
+                <option value="CN">🇨🇳 China (Customs)</option>
+                <option value="IN">🇮🇳 India (GST)</option>
+            </select>
+            
+            <label>Origin Country:</label>
+            <select id="originCountry">
+                <option value="CN">🇨🇳 China</option>
+                <option value="DE">🇩🇪 Germany</option>
+                <option value="US">🇺🇸 United States</option>
+                <option value="IN">🇮🇳 India</option>
+                <option value="JP">🇯🇵 Japan</option>
+            </select>
+            
+            <label>Customs Value (USD):</label>
+            <input type="number" id="customsValue" value="10000" placeholder="10000">
+            
+            <label>Duty Rate (%):</label>
+            <input type="number" id="dutyRate" value="10" placeholder="10">
+            
+            <button onclick="calculateGlobal()">Calculate Duties & Taxes</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Simplified version of the global calculator for testing
+        const GlobalCustomsCalculator = {
+            SARS: {
+                vatRate: 0.15,
+                belnCountries: ['BW', 'LS', 'SZ', 'NA'],
+                
+                calculateComplete(params) {
+                    const { customsValue, originCountry } = params;
+                    const dutyRate = 20; // Example rate
+                    const customsDuty = customsValue * (dutyRate / 100);
+                    const isBELN = this.belnCountries.includes(originCountry?.toUpperCase());
+                    const uplift = isBELN ? 0 : customsValue * 0.10;
+                    const atv = customsValue + uplift + customsDuty;
+                    const importVAT = atv * this.vatRate;
+                    
+                    return {
+                        customsDuty,
+                        importVAT,
+                        totalBorderTaxes: customsDuty + importVAT,
+                        tradeAgreement: originCountry === 'DE' ? 'EU' : 'general'
+                    };
+                }
+            },
+            
+            US: {
+                calculateDuty(customsValue, dutyRate) {
+                    return customsValue * (dutyRate / 100);
+                },
+                calculateTax(customsValue, duties) {
+                    return (customsValue + duties) * 0.06; // Average state tax
+                }
+            },
+            
+            EU: {
+                calculateDuty(customsValue, dutyRate) {
+                    return customsValue * (dutyRate / 100);
+                },
+                calculateVAT(customsValue, duties, country) {
+                    const vatRates = { 'DE': 0.19, 'FR': 0.20, 'default': 0.20 };
+                    const vatRate = vatRates[country] || vatRates.default;
+                    return (customsValue + duties) * vatRate;
+                }
+            },
+            
+            UK: {
+                calculateDuty(customsValue, dutyRate) {
+                    return customsValue * (dutyRate / 100);
+                },
+                calculateVAT(customsValue, duties) {
+                    return (customsValue + duties) * 0.20;
+                }
+            },
+            
+            CN: {
+                calculateDuty(customsValue, dutyRate) {
+                    return customsValue * (dutyRate / 100);
+                },
+                calculateVAT(customsValue, duties) {
+                    return (customsValue + duties) * 0.13;
+                }
+            },
+            
+            IN: {
+                calculateDuty(customsValue, dutyRate) {
+                    return customsValue * (dutyRate / 100);
+                },
+                calculateGST(customsValue, duties) {
+                    return (customsValue + duties) * 0.18;
+                }
+            },
+            
+            calculateForCountry(importCountry, params) {
+                const { customsValue, dutyRate = 10 } = params;
+                let result = {
+                    importCountry,
+                    customsValue,
+                    customsDuty: 0,
+                    vat: 0,
+                    totalTaxes: 0,
+                    method: 'Unknown'
+                };
+                
+                switch (importCountry.toUpperCase()) {
+                    case 'ZA':
+                        const sarsResult = this.SARS.calculateComplete(params);
+                        result = {
+                            ...result,
+                            customsDuty: sarsResult.customsDuty,
+                            vat: sarsResult.importVAT,
+                            totalTaxes: sarsResult.totalBorderTaxes,
+                            method: 'SARS (South Africa)',
+                            tradeAgreement: sarsResult.tradeAgreement
+                        };
+                        break;
+                        
+                    case 'US':
+                        result.customsDuty = this.US.calculateDuty(customsValue, dutyRate);
+                        result.vat = this.US.calculateTax(customsValue, result.customsDuty);
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'CBP (United States)';
+                        break;
+                        
+                    case 'DE':
+                        result.customsDuty = this.EU.calculateDuty(customsValue, dutyRate);
+                        result.vat = this.EU.calculateVAT(customsValue, result.customsDuty, 'DE');
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'EU Customs (Germany)';
+                        break;
+                        
+                    case 'GB':
+                        result.customsDuty = this.UK.calculateDuty(customsValue, dutyRate);
+                        result.vat = this.UK.calculateVAT(customsValue, result.customsDuty);
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'HMRC (United Kingdom)';
+                        break;
+                        
+                    case 'CN':
+                        result.customsDuty = this.CN.calculateDuty(customsValue, dutyRate);
+                        result.vat = this.CN.calculateVAT(customsValue, result.customsDuty);
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'China Customs';
+                        break;
+                        
+                    case 'IN':
+                        result.customsDuty = this.IN.calculateDuty(customsValue, dutyRate);
+                        result.vat = this.IN.calculateGST(customsValue, result.customsDuty);
+                        result.totalTaxes = result.customsDuty + result.vat;
+                        result.method = 'India Customs (GST)';
+                        break;
+                }
+                
+                return result;
+            }
+        };
+        
+        function formatCurrency(amount, currency = 'USD') {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency
+            }).format(amount);
+        }
+        
+        function calculateGlobal() {
+            const importCountry = document.getElementById('importCountry').value;
+            const originCountry = document.getElementById('originCountry').value;
+            const customsValue = parseFloat(document.getElementById('customsValue').value);
+            const dutyRate = parseFloat(document.getElementById('dutyRate').value);
+            
+            const result = GlobalCustomsCalculator.calculateForCountry(importCountry, {
+                customsValue,
+                originCountry,
+                dutyRate
+            });
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="country-section">
+                    <h3>🧮 Calculation Results</h3>
+                    <div class="result"><strong>System:</strong> ${result.method}</div>
+                    <div class="result"><strong>Customs Value:</strong> ${formatCurrency(result.customsValue)}</div>
+                    <div class="result"><strong>Customs Duty:</strong> ${formatCurrency(result.customsDuty)}</div>
+                    <div class="result"><strong>VAT/Tax:</strong> ${formatCurrency(result.vat)}</div>
+                    <div class="result"><strong>Total Border Taxes:</strong> ${formatCurrency(result.totalTaxes)}</div>
+                    <div class="result"><strong>Total Landed Cost:</strong> ${formatCurrency(result.customsValue + result.totalTaxes)}</div>
+                    ${result.tradeAgreement ? `<div class="result"><strong>Trade Agreement:</strong> ${result.tradeAgreement}</div>` : ''}
+                </div>
+            `;
+        }
+        
+        // Run initial calculation
+        calculateGlobal();
+    </script>
+</body>
+</html>
