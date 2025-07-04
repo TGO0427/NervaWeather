@@ -557,6 +557,7 @@
                             <div class="bg-white p-4 rounded-lg shadow-sm sticky top-6"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Costing Summary</h3><div id="summary-output" class="space-y-2 text-sm"></div></div>
                             <div class="bg-white p-4 rounded-lg shadow-sm" style="position:sticky; top: 24rem;"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Landed Cost Calculator</h3><div id="landed-cost-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="landed-cost-output" class="space-y-2 text-sm"></div></div>
                             <div class="bg-white p-4 rounded-lg shadow-sm" style="position:sticky; top: 48rem;"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">💰 Pricing Strategy</h3><div id="pricing-strategy-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="pricing-strategy-output" class="space-y-2 text-sm"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm"><h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">📊 Cost Splitting</h3><div id="cost-splitting-inputs" class="grid grid-cols-1 gap-4 mb-4"></div><div id="cost-splitting-output" class="space-y-2 text-sm"></div></div>
                         </div>
                     </div>
                 </div>
@@ -646,7 +647,12 @@
                 clearing: { title: 'Forwarding & clearing', currencyOptions: ['ZAR'], items: { agencyFee: { label: 'Agency Fee', value: '1850', currency: 'zar' }, customsClearance: { label: 'Customs Clearance', value: '950', currency: 'zar' }, documentation: { label: 'Documentation', value: '450', currency: 'zar' }, portHealthInspection: { label: 'Port health inspection', value: '0', currency: 'zar' }, daffInspection: { label: 'DAFF inspection', value: '0', currency: 'zar' }, stateVetCancellation: { label: 'State vet cancellation fee', value: '0', currency: 'zar' }, nbTurnIn: { label: 'NB turn in', value: '0', currency: 'zar' }, vesselAc: { label: 'Vessel A&C', value: '0', currency: 'zar' } } },
                 transport: { title: 'Transport and warehousing', currencyOptions: ['ZAR'], items: { localCartageCptUnder20: { label: 'Local cartage: CPT to Klapmuts < 20 ton', value: '0', currency: 'zar' }, localCartageCpt21_28: { label: 'Local cartage: CPT to Klapmuts 21-28 ton', value: '0', currency: 'zar' }, transportDbnPta20ft: { label: 'Transport: DBN port to Pretoria - 20ft < 20 tons, direct', value: '0', currency: 'zar' }, transportDbnWhs: { label: 'Transport: DBN port to WHS', value: '0', currency: 'zar' }, unpackReload: { label: 'Unpack / Reload', value: '0', currency: 'zar' }, storage: { label: 'Storage (3 days free)', value: '0', currency: 'zar' }, outlyingSurcharge: { label: 'Outlying container depot surcharge', value: '0', currency: 'zar' }, localCartageDbnPtaA: { label: 'Local cartage: DBN WHS to Pretoria - Option A', value: '0', currency: 'zar' }, localCartageDbnPtaB: { label: 'Local cartage: DBN WHS to Pretoria - Option B', value: '0', currency: 'zar' }, localCartageDbn6m: { label: 'Local cartage: DBN WHS to Pretoria - 6m deckspace', value: '0', currency: 'zar' }, localCartageDbn12m: { label: 'Local cartage: DBN WHS to Pretoria - 12m deckspace', value: '0', currency: 'zar' }, transportPePta: { label: 'Transport: PE/Coega port to Pretoria', value: '0', currency: 'zar' } } } 
             }, 
-            landedCost: { commercialInvoiceValue: { label: 'Commercial Invoice Value (USD)', value: '15000' }, dutyRate: { label: 'Rate of Duty (%)', value: '5' }, totalKg: { label: 'Total Kg', value: '1000' } },
+            landedCost: { 
+                commercialInvoiceValue: { label: 'Commercial Invoice Value (USD)', value: '15000' }, 
+                hsCode: { label: 'HS Code', value: '', type: 'text' },
+                dutyRate: { label: 'Rate of Duty (%)', value: '5' }, 
+                totalKg: { label: 'Total Kg', value: '1000' } 
+            },
             pricingStrategy: {
                 unitQuantity: { label: 'Unit Quantity', value: '100', type: 'number' },
                 pricingMethod: { label: 'Pricing Method', value: 'margin', options: ['margin', 'markup', 'manual'] },
@@ -654,6 +660,12 @@
                 markupPercent: { label: 'Markup (%)', value: '35', type: 'number' },
                 manualSellPrice: { label: 'Sell Price per Unit (ZAR)', value: '0', type: 'number' },
                 targetCurrency: { label: 'Pricing Currency', value: 'zar', options: ['zar', 'usd', 'eur'] }
+            },
+            costSplitting: {
+                enabled: { label: 'Enable Cost Splitting', value: false, type: 'checkbox' },
+                method: { label: 'Split Method', value: 'weight', options: ['weight', 'volume', 'units'] },
+                totalVolume: { label: 'Total Volume (CBM)', value: '65', type: 'number' },
+                itemUnits: { label: 'Number of Items', value: '1', type: 'number' }
             }
         };
         const VAT_RATE = 0.15;
@@ -910,6 +922,205 @@
                 }
 
                 return true;
+            }
+        };
+
+        // --- HS CODE LOOKUP SYSTEM ---
+        const HSCodeDatabase = {
+            codes: {
+                // Electronics & Machinery
+                '8471': { 
+                    description: 'Computers and computer equipment', 
+                    dutyRate: 0, 
+                    category: 'Electronics',
+                    examples: ['Laptops', 'Desktop computers', 'Tablets']
+                },
+                '8528': { 
+                    description: 'Television receivers and monitors', 
+                    dutyRate: 15, 
+                    category: 'Electronics',
+                    examples: ['TV sets', 'Computer monitors', 'Digital displays']
+                },
+                '8517': { 
+                    description: 'Telephone and communication equipment', 
+                    dutyRate: 0, 
+                    category: 'Electronics',
+                    examples: ['Mobile phones', 'Routers', 'Communication devices']
+                },
+                '8429': { 
+                    description: 'Construction and earth-moving machinery', 
+                    dutyRate: 0, 
+                    category: 'Machinery',
+                    examples: ['Excavators', 'Bulldozers', 'Graders']
+                },
+                '8443': { 
+                    description: 'Printing machinery and equipment', 
+                    dutyRate: 0, 
+                    category: 'Machinery',
+                    examples: ['Printers', 'Copiers', 'Printing presses']
+                },
+                
+                // Textiles & Clothing
+                '6203': { 
+                    description: 'Men\'s suits, jackets and trousers', 
+                    dutyRate: 45, 
+                    category: 'Textiles',
+                    examples: ['Business suits', 'Casual jackets', 'Dress pants']
+                },
+                '6204': { 
+                    description: 'Women\'s suits, jackets and skirts', 
+                    dutyRate: 45, 
+                    category: 'Textiles',
+                    examples: ['Women\'s suits', 'Blazers', 'Skirts']
+                },
+                '6109': { 
+                    description: 'T-shirts, singlets and other vests', 
+                    dutyRate: 45, 
+                    category: 'Textiles',
+                    examples: ['T-shirts', 'Tank tops', 'Basic vests']
+                },
+                '6403': { 
+                    description: 'Footwear with leather uppers', 
+                    dutyRate: 30, 
+                    category: 'Textiles',
+                    examples: ['Leather shoes', 'Boots', 'Formal footwear']
+                },
+                
+                // Automotive
+                '8703': { 
+                    description: 'Motor cars and passenger vehicles', 
+                    dutyRate: 25, 
+                    category: 'Automotive',
+                    examples: ['Passenger cars', 'SUVs', 'Sedans']
+                },
+                '8708': { 
+                    description: 'Motor vehicle parts and accessories', 
+                    dutyRate: 20, 
+                    category: 'Automotive',
+                    examples: ['Engine parts', 'Brake systems', 'Vehicle accessories']
+                },
+                '4011': { 
+                    description: 'New pneumatic tyres of rubber', 
+                    dutyRate: 15, 
+                    category: 'Automotive',
+                    examples: ['Car tyres', 'Truck tyres', 'Motorcycle tyres']
+                },
+                
+                // Chemicals & Pharmaceuticals
+                '3004': { 
+                    description: 'Medicaments for therapeutic or prophylactic uses', 
+                    dutyRate: 0, 
+                    category: 'Pharmaceuticals',
+                    examples: ['Medicines', 'Vaccines', 'Medical drugs']
+                },
+                '3808': { 
+                    description: 'Insecticides, fungicides and similar products', 
+                    dutyRate: 10, 
+                    category: 'Chemicals',
+                    examples: ['Pesticides', 'Herbicides', 'Agricultural chemicals']
+                },
+                '3926': { 
+                    description: 'Other articles of plastics', 
+                    dutyRate: 10, 
+                    category: 'Chemicals',
+                    examples: ['Plastic containers', 'Plastic furniture', 'Plastic accessories']
+                },
+                
+                // Food & Agriculture
+                '1701': { 
+                    description: 'Cane or beet sugar and chemically pure sucrose', 
+                    dutyRate: 0, 
+                    category: 'Food',
+                    examples: ['Raw sugar', 'Refined sugar', 'Sugar crystals']
+                },
+                '0901': { 
+                    description: 'Coffee, whether or not roasted or decaffeinated', 
+                    dutyRate: 7.5, 
+                    category: 'Food',
+                    examples: ['Coffee beans', 'Ground coffee', 'Instant coffee']
+                },
+                '2204': { 
+                    description: 'Wine of fresh grapes', 
+                    dutyRate: 0, 
+                    category: 'Food',
+                    examples: ['Red wine', 'White wine', 'Sparkling wine']
+                },
+                
+                // Metals & Materials
+                '7208': { 
+                    description: 'Flat-rolled products of iron or steel', 
+                    dutyRate: 10, 
+                    category: 'Metals',
+                    examples: ['Steel sheets', 'Steel plates', 'Steel strips']
+                },
+                '7601': { 
+                    description: 'Unwrought aluminium', 
+                    dutyRate: 0, 
+                    category: 'Metals',
+                    examples: ['Aluminium ingots', 'Aluminium billets', 'Raw aluminium']
+                },
+                '4403': { 
+                    description: 'Wood in the rough', 
+                    dutyRate: 0, 
+                    category: 'Materials',
+                    examples: ['Timber logs', 'Raw wood', 'Lumber']
+                }
+            },
+
+            searchCodes(query) {
+                const results = [];
+                const searchTerm = query.toLowerCase();
+                
+                for (const [code, data] of Object.entries(this.codes)) {
+                    // Search in code, description, category, and examples
+                    const searchText = `${code} ${data.description} ${data.category} ${data.examples.join(' ')}`.toLowerCase();
+                    
+                    if (searchText.includes(searchTerm)) {
+                        results.push({
+                            code,
+                            ...data,
+                            relevance: this.calculateRelevance(searchText, searchTerm)
+                        });
+                    }
+                }
+                
+                // Sort by relevance
+                return results.sort((a, b) => b.relevance - a.relevance).slice(0, 10);
+            },
+
+            calculateRelevance(text, searchTerm) {
+                let score = 0;
+                
+                // Exact code match gets highest score
+                if (text.startsWith(searchTerm)) score += 100;
+                
+                // Description match gets high score
+                if (text.includes(searchTerm)) score += 50;
+                
+                // Multiple word matches
+                const words = searchTerm.split(' ');
+                words.forEach(word => {
+                    if (word.length > 2 && text.includes(word)) {
+                        score += 20;
+                    }
+                });
+                
+                return score;
+            },
+
+            getByCode(hsCode) {
+                return this.codes[hsCode] || null;
+            },
+
+            getByCategory(category) {
+                return Object.entries(this.codes)
+                    .filter(([code, data]) => data.category === category)
+                    .map(([code, data]) => ({ code, ...data }));
+            },
+
+            getAllCategories() {
+                const categories = [...new Set(Object.values(this.codes).map(item => item.category))];
+                return categories.sort();
             }
         };
 
@@ -1958,6 +2169,336 @@
                     }
                 }
             },
+
+            // --- HS CODE LOOKUP METHODS ---
+            searchHSCodes(query) {
+                const resultsContainer = document.getElementById('hs-search-results');
+                if (!resultsContainer || !query || query.length < 2) {
+                    if (resultsContainer) resultsContainer.classList.add('hidden');
+                    return;
+                }
+
+                const results = HSCodeDatabase.searchCodes(query);
+                
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = '<div class="p-3 text-gray-500 text-sm">No HS codes found</div>';
+                } else {
+                    resultsContainer.innerHTML = results.map(result => `
+                        <div class="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                             onclick="App.selectHSCode('${result.code}', '${result.description}', ${result.dutyRate})">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="font-medium text-gray-900">${result.code}</div>
+                                    <div class="text-sm text-gray-600">${result.description}</div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full">${result.category}</span>
+                                        Examples: ${result.examples.slice(0, 2).join(', ')}
+                                    </div>
+                                </div>
+                                <div class="ml-3 text-right">
+                                    <div class="text-sm font-medium ${result.dutyRate === 0 ? 'text-green-600' : 'text-orange-600'}">
+                                        ${result.dutyRate}% duty
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                resultsContainer.classList.remove('hidden');
+                
+                // Hide results when clicking outside
+                setTimeout(() => {
+                    document.addEventListener('click', this.hideHSResults, { once: true });
+                }, 100);
+            },
+
+            selectHSCode(code, description, dutyRate) {
+                const hsCodeInput = document.getElementById('lc-hsCode');
+                const dutyRateInput = document.getElementById('lc-dutyRate');
+                const resultsContainer = document.getElementById('hs-search-results');
+                
+                if (hsCodeInput) {
+                    hsCodeInput.value = code;
+                    state.landedCost.hsCode.value = code;
+                }
+                
+                if (dutyRateInput) {
+                    dutyRateInput.value = dutyRate;
+                    state.landedCost.dutyRate.value = dutyRate.toString();
+                }
+                
+                if (resultsContainer) {
+                    resultsContainer.classList.add('hidden');
+                }
+                
+                // Update calculations
+                this.updateDisplay();
+                
+                showToast(`HS Code ${code} selected - ${dutyRate}% duty rate applied`, 'success');
+                console.log('📋 HS Code selected:', { code, description, dutyRate });
+            },
+
+            hideHSResults(event) {
+                const resultsContainer = document.getElementById('hs-search-results');
+                const hsCodeInput = document.getElementById('lc-hsCode');
+                
+                if (resultsContainer && !resultsContainer.contains(event.target) && event.target !== hsCodeInput) {
+                    resultsContainer.classList.add('hidden');
+                }
+            },
+
+            showHSCodeBrowser() {
+                const categories = HSCodeDatabase.getAllCategories();
+                
+                // Create modal overlay
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+                modal.onclick = (e) => {
+                    if (e.target === modal) modal.remove();
+                };
+                
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-90vh overflow-hidden" onclick="event.stopPropagation()">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold text-gray-900">HS Code Browser</h3>
+                                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                                    <span class="text-xl">×</span>
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">Browse HS codes by category or search for specific products</p>
+                        </div>
+                        
+                        <div class="flex" style="height: 60vh;">
+                            <!-- Categories Sidebar -->
+                            <div class="w-1/3 border-r border-gray-200 overflow-y-auto">
+                                <div class="p-4">
+                                    <h4 class="font-medium text-gray-900 mb-3">Categories</h4>
+                                    <div class="space-y-1">
+                                        ${categories.map(category => `
+                                            <button class="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100 category-btn"
+                                                    onclick="App.showCategoryDetails('${category}')">
+                                                ${category}
+                                            </button>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Details Panel -->
+                            <div class="flex-1 overflow-y-auto">
+                                <div id="category-details" class="p-4">
+                                    <div class="text-center text-gray-500 py-8">
+                                        <div class="text-4xl mb-4">📋</div>
+                                        <p>Select a category to view HS codes</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            },
+
+            showCategoryDetails(category) {
+                const detailsContainer = document.getElementById('category-details');
+                const codes = HSCodeDatabase.getByCategory(category);
+                
+                // Highlight selected category
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('bg-blue-100', 'text-blue-800');
+                    if (btn.textContent.trim() === category) {
+                        btn.classList.add('bg-blue-100', 'text-blue-800');
+                    }
+                });
+                
+                detailsContainer.innerHTML = `
+                    <h4 class="font-semibold text-gray-900 mb-4">${category} (${codes.length} codes)</h4>
+                    <div class="space-y-3">
+                        ${codes.map(code => `
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 cursor-pointer transition-colors"
+                                 onclick="App.selectHSCode('${code.code}', '${code.description}', ${code.dutyRate}); this.closest('.fixed').remove();">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <div class="font-medium text-gray-900 mb-1">${code.code}</div>
+                                        <div class="text-sm text-gray-600 mb-2">${code.description}</div>
+                                        <div class="text-xs text-gray-500">
+                                            Examples: ${code.examples.join(', ')}
+                                        </div>
+                                    </div>
+                                    <div class="ml-4 text-right">
+                                        <span class="inline-block px-2 py-1 text-xs font-medium rounded-full ${code.dutyRate === 0 ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">
+                                            ${code.dutyRate}% duty
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            },
+
+            // --- COST SPLITTING METHODS ---
+            toggleCostSplitting(enabled) {
+                state.costSplitting.enabled.value = enabled;
+                
+                // Show/hide relevant sections
+                const methodContainer = document.getElementById('cs-method-container');
+                const volumeContainer = document.getElementById('cs-totalVolume-container');
+                const unitsContainer = document.getElementById('cs-itemUnits-container');
+                
+                if (methodContainer) methodContainer.style.display = enabled ? 'block' : 'none';
+                
+                if (enabled) {
+                    this.updateCostSplittingVisibility();
+                } else {
+                    if (volumeContainer) volumeContainer.style.display = 'none';
+                    if (unitsContainer) unitsContainer.style.display = 'none';
+                }
+                
+                this.updateCostSplitting();
+            },
+
+            updateCostSplittingVisibility() {
+                const method = document.getElementById('cs-method')?.value || state.costSplitting.method.value;
+                const volumeContainer = document.getElementById('cs-totalVolume-container');
+                const unitsContainer = document.getElementById('cs-itemUnits-container');
+                
+                if (volumeContainer) volumeContainer.style.display = method === 'volume' ? 'block' : 'none';
+                if (unitsContainer) unitsContainer.style.display = method === 'units' ? 'block' : 'none';
+            },
+
+            updateCostSplitting() {
+                try {
+                    const enabled = document.getElementById('cs-enabled')?.checked || state.costSplitting.enabled.value;
+                    
+                    if (!enabled) {
+                        const outputContainer = document.getElementById('cost-splitting-output');
+                        if (outputContainer) {
+                            outputContainer.innerHTML = '<div class="text-gray-500 text-sm">Cost splitting is disabled</div>';
+                        }
+                        return;
+                    }
+
+                    // Update visibility first
+                    this.updateCostSplittingVisibility();
+                    
+                    const { totals, landed } = this.calculateAll();
+                    
+                    const method = document.getElementById('cs-method')?.value || state.costSplitting.method.value;
+                    const totalVolume = parseFloat(document.getElementById('cs-totalVolume')?.value || state.costSplitting.totalVolume.value);
+                    const itemUnits = parseFloat(document.getElementById('cs-itemUnits')?.value || state.costSplitting.itemUnits.value);
+                    const totalKg = parseFloat(document.getElementById('lc-totalKg')?.value || state.landedCost.totalKg.value);
+                    
+                    let costPerUnit, unitLabel, splitDivisor;
+                    
+                    switch (method) {
+                        case 'weight':
+                            splitDivisor = totalKg;
+                            unitLabel = 'per Kg';
+                            break;
+                        case 'volume':
+                            splitDivisor = totalVolume;
+                            unitLabel = 'per CBM';
+                            break;
+                        case 'units':
+                            splitDivisor = itemUnits;
+                            unitLabel = 'per Item';
+                            break;
+                        default:
+                            splitDivisor = 1;
+                            unitLabel = 'total';
+                    }
+                    
+                    if (splitDivisor <= 0) {
+                        const outputContainer = document.getElementById('cost-splitting-output');
+                        if (outputContainer) {
+                            outputContainer.innerHTML = '<div class="text-red-600 text-sm">Please enter a valid divisor value</div>';
+                        }
+                        return;
+                    }
+                    
+                    // Calculate cost breakdowns
+                    const costBreakdown = {
+                        freight: totals.subtotalFreight / splitDivisor,
+                        origin: totals.subtotalOrigin / splitDivisor,
+                        destination: totals.subtotalDestinationCharges / splitDivisor,
+                        clearing: totals.subtotalClearing / splitDivisor,
+                        transport: totals.subtotalTransport / splitDivisor,
+                        totalLogistics: totals.grandTotal / splitDivisor,
+                        landedCost: landed.totalLandedCost / splitDivisor
+                    };
+                    
+                    // Update display
+                    const outputContainer = document.getElementById('cost-splitting-output');
+                    if (outputContainer) {
+                        outputContainer.innerHTML = `
+                            <div class="space-y-3">
+                                <div class="bg-blue-50 p-3 rounded-md border border-blue-200">
+                                    <h4 class="font-semibold text-blue-700 mb-2">📊 Cost Breakdown (${unitLabel})</h4>
+                                    <div class="space-y-1 text-xs">
+                                        <div class="flex justify-between">
+                                            <span>Freight Costs:</span>
+                                            <span class="font-medium">${formatCurrency(costBreakdown.freight)}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Origin Charges:</span>
+                                            <span class="font-medium">${formatCurrency(costBreakdown.origin)}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Destination Charges:</span>
+                                            <span class="font-medium">${formatCurrency(costBreakdown.destination)}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Clearing & Forwarding:</span>
+                                            <span class="font-medium">${formatCurrency(costBreakdown.clearing)}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Transport:</span>
+                                            <span class="font-medium">${formatCurrency(costBreakdown.transport)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-green-50 p-3 rounded-md border border-green-200">
+                                    <h4 class="font-semibold text-green-700 mb-2">🎯 Total Costs (${unitLabel})</h4>
+                                    <div class="space-y-1 text-xs">
+                                        <div class="flex justify-between">
+                                            <span>Total Logistics:</span>
+                                            <span class="font-bold text-green-800">${formatCurrency(costBreakdown.totalLogistics)}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Total Landed Cost:</span>
+                                            <span class="font-bold text-green-800">${formatCurrency(costBreakdown.landedCost)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-3 rounded-md">
+                                    <div class="text-xs text-gray-600">
+                                        Split by: ${method} • Divisor: ${splitDivisor.toLocaleString()} ${method === 'weight' ? 'kg' : method === 'volume' ? 'CBM' : 'items'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    console.log('📊 Cost splitting updated:', {
+                        method,
+                        divisor: splitDivisor,
+                        costPerUnit: costBreakdown.landedCost
+                    });
+                    
+                } catch (error) {
+                    console.error('Error updating cost splitting:', error);
+                    const outputContainer = document.getElementById('cost-splitting-output');
+                    if (outputContainer) {
+                        outputContainer.innerHTML = '<div class="text-red-600 text-sm">Error calculating cost splitting. Please check your inputs.</div>';
+                    }
+                }
+            },
             
             getCurrentData(fullState = false) { 
                 const currentValues = { details: {}, exchangeRates: {}, originCharges: {}, costs: {}, landedCost: {} }; 
@@ -2371,10 +2912,38 @@
                     // Generate Landed Cost inputs
                     const landedContainer = document.getElementById('landed-cost-inputs');
                     if (landedContainer) {
-                        landedContainer.innerHTML = Object.entries(state.landedCost).map(([key, item]) => `<div> 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label> 
-                            <input type="number" step="0.01" id="lc-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> 
-                        </div>`).join(''); 
+                        const landedFields = Object.entries(state.landedCost).map(([key, item]) => {
+                            if (key === 'hsCode') {
+                                return `<div class="relative">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label>
+                                    <div class="relative">
+                                        <input type="text" 
+                                               id="lc-${key}" 
+                                               value="${item.value}" 
+                                               class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 pr-8" 
+                                               placeholder="Search by product or code"
+                                               oninput="App.searchHSCodes(this.value)"
+                                               autocomplete="off">
+                                        <button type="button" 
+                                                onclick="App.showHSCodeBrowser()" 
+                                                class="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+                                                title="Browse HS Codes">
+                                            🔍
+                                        </button>
+                                    </div>
+                                    <div id="hs-search-results" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto hidden"></div>
+                                </div>`;
+                            } else {
+                                const inputType = item.type === 'text' ? 'text' : 'number';
+                                const step = inputType === 'number' ? 'step="0.01"' : '';
+                                return `<div> 
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label> 
+                                    <input type="${inputType}" ${step} id="lc-${key}" value="${item.value}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"> 
+                                </div>`;
+                            }
+                        }).join('');
+                        
+                        landedContainer.innerHTML = landedFields;
                     }
                     
                     // Generate Pricing Strategy inputs
@@ -2415,6 +2984,47 @@
                         
                         pricingContainer.innerHTML = pricingFields;
                         console.log('✅ Pricing strategy inputs generated');
+                    }
+                    
+                    // Generate Cost Splitting inputs
+                    const costSplittingContainer = document.getElementById('cost-splitting-inputs');
+                    if (costSplittingContainer) {
+                        const splittingFields = Object.entries(state.costSplitting).map(([key, item]) => {
+                            if (key === 'enabled') {
+                                return `<div>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="cs-${key}" ${item.value ? 'checked' : ''} 
+                                               class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                                               onchange="App.toggleCostSplitting(this.checked)">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">${item.label}</span>
+                                    </label>
+                                    <p class="text-xs text-gray-500 mt-1">Split costs per unit/weight/volume for multi-item shipments</p>
+                                </div>`;
+                            } else if (key === 'method') {
+                                return `<div ${!state.costSplitting.enabled.value ? 'style="display: none;"' : ''} id="cs-${key}-container">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label>
+                                    <select id="cs-${key}" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" onchange="App.updateCostSplitting()">
+                                        <option value="weight" ${item.value === 'weight' ? 'selected' : ''}>By Weight (per Kg)</option>
+                                        <option value="volume" ${item.value === 'volume' ? 'selected' : ''}>By Volume (per CBM)</option>
+                                        <option value="units" ${item.value === 'units' ? 'selected' : ''}>By Units (equal split)</option>
+                                    </select>
+                                </div>`;
+                            } else {
+                                const isConditional = !state.costSplitting.enabled.value || 
+                                                    (key === 'totalVolume' && state.costSplitting.method.value !== 'volume') ||
+                                                    (key === 'itemUnits' && state.costSplitting.method.value !== 'units');
+                                                    
+                                return `<div ${isConditional ? 'style="display: none;"' : ''} id="cs-${key}-container">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">${item.label}</label>
+                                    <input type="number" step="0.01" id="cs-${key}" value="${item.value}" 
+                                           class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-gray-800" 
+                                           oninput="App.updateCostSplitting()" placeholder="Enter ${item.label.toLowerCase()}">
+                                </div>`;
+                            }
+                        }).join('');
+                        
+                        costSplittingContainer.innerHTML = splittingFields;
+                        console.log('✅ Cost splitting inputs generated');
                     }
                 } catch (error) {
                     console.error('Error in generateInputs:', error);
