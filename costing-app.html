@@ -925,145 +925,267 @@
             }
         };
 
-        // --- HS CODE LOOKUP SYSTEM ---
+        // --- COMPREHENSIVE SA CUSTOMS HS CODE SYSTEM ---
         const HSCodeDatabase = {
             codes: {
-                // Electronics & Machinery
-                '8471': { 
-                    description: 'Computers and computer equipment', 
+                // Chapter 84: Nuclear reactors, boilers, machinery and mechanical appliances
+                '8471.30': { 
+                    description: 'Portable automatic data processing machines, weighing not more than 10 kg', 
                     dutyRate: 0, 
-                    category: 'Electronics',
-                    examples: ['Laptops', 'Desktop computers', 'Tablets']
+                    category: 'Electronics & IT',
+                    chapter: '84',
+                    examples: ['Laptops', 'Notebooks', 'Tablet computers'],
+                    notes: 'Duty-free under various trade agreements'
                 },
-                '8528': { 
-                    description: 'Television receivers and monitors', 
+                '8471.41': { 
+                    description: 'Other automatic data processing machines: Comprising in the same housing at least a central processing unit and an input and output unit', 
+                    dutyRate: 0, 
+                    category: 'Electronics & IT',
+                    chapter: '84',
+                    examples: ['Desktop computers', 'All-in-one PCs', 'Workstations'],
+                    notes: 'Includes complete computer systems'
+                },
+                '8471.60': { 
+                    description: 'Input or output units, whether or not presented with the rest of a system', 
+                    dutyRate: 0, 
+                    category: 'Electronics & IT',
+                    chapter: '84',
+                    examples: ['Keyboards', 'Mice', 'Monitors', 'Printers'],
+                    notes: 'Computer peripherals and accessories'
+                },
+                '8528.72': { 
+                    description: 'Reception apparatus for television, colour, incorporating video recording or reproducing apparatus', 
                     dutyRate: 15, 
-                    category: 'Electronics',
-                    examples: ['TV sets', 'Computer monitors', 'Digital displays']
+                    category: 'Electronics & IT',
+                    chapter: '85',
+                    examples: ['Smart TVs', 'TV with built-in recording', 'Digital TV receivers'],
+                    notes: 'Standard rate for consumer electronics'
                 },
-                '8517': { 
-                    description: 'Telephone and communication equipment', 
+                '8517.12': { 
+                    description: 'Telephones for cellular networks or for other wireless networks', 
                     dutyRate: 0, 
-                    category: 'Electronics',
-                    examples: ['Mobile phones', 'Routers', 'Communication devices']
+                    category: 'Electronics & IT',
+                    chapter: '85',
+                    examples: ['Mobile phones', 'Smartphones', 'Satellite phones'],
+                    notes: 'Duty-free to encourage technology adoption'
                 },
-                '8429': { 
-                    description: 'Construction and earth-moving machinery', 
+                '8517.62': { 
+                    description: 'Machines for the reception, conversion and transmission or regeneration of voice, images or other data', 
                     dutyRate: 0, 
-                    category: 'Machinery',
-                    examples: ['Excavators', 'Bulldozers', 'Graders']
-                },
-                '8443': { 
-                    description: 'Printing machinery and equipment', 
-                    dutyRate: 0, 
-                    category: 'Machinery',
-                    examples: ['Printers', 'Copiers', 'Printing presses']
+                    category: 'Electronics & IT',
+                    chapter: '85',
+                    examples: ['Routers', 'Modems', 'Network switches', 'WiFi equipment'],
+                    notes: 'Critical IT infrastructure'
                 },
                 
-                // Textiles & Clothing
-                '6203': { 
-                    description: 'Men\'s suits, jackets and trousers', 
-                    dutyRate: 45, 
-                    category: 'Textiles',
-                    examples: ['Business suits', 'Casual jackets', 'Dress pants']
+                // Chapter 84: Machinery and mechanical appliances
+                '8429.52': { 
+                    description: 'Machinery with a 360° revolving superstructure (excavators)', 
+                    dutyRate: 0, 
+                    category: 'Industrial Machinery',
+                    chapter: '84',
+                    examples: ['Hydraulic excavators', 'Mining excavators', 'Construction excavators'],
+                    notes: 'Capital equipment for infrastructure development'
                 },
-                '6204': { 
-                    description: 'Women\'s suits, jackets and skirts', 
-                    dutyRate: 45, 
-                    category: 'Textiles',
-                    examples: ['Women\'s suits', 'Blazers', 'Skirts']
+                '8443.32': { 
+                    description: 'Printers and copying machines, multifunction machines', 
+                    dutyRate: 0, 
+                    category: 'Office Equipment',
+                    chapter: '84',
+                    examples: ['Laser printers', 'Inkjet printers', 'Multifunction copiers'],
+                    notes: 'Business equipment duty exemption'
                 },
-                '6109': { 
-                    description: 'T-shirts, singlets and other vests', 
+                
+                // Chapter 62: Articles of apparel and clothing accessories, not knitted
+                '6203.42': { 
+                    description: 'Men\'s or boys\' trousers, bib and brace overalls, breeches and shorts, of cotton', 
                     dutyRate: 45, 
-                    category: 'Textiles',
-                    examples: ['T-shirts', 'Tank tops', 'Basic vests']
+                    category: 'Textiles & Clothing',
+                    chapter: '62',
+                    examples: ['Cotton trousers', 'Jeans', 'Chinos', 'Work pants'],
+                    notes: 'Protection for local textile industry'
                 },
-                '6403': { 
-                    description: 'Footwear with leather uppers', 
+                '6204.62': { 
+                    description: 'Women\'s or girls\' trousers, bib and brace overalls, breeches and shorts, of cotton', 
+                    dutyRate: 45, 
+                    category: 'Textiles & Clothing',
+                    chapter: '62',
+                    examples: ['Women\'s pants', 'Cotton trousers', 'Casual wear'],
+                    notes: 'High protection rate for clothing'
+                },
+                
+                // Chapter 61: Articles of apparel and clothing accessories, knitted or crocheted
+                '6109.10': { 
+                    description: 'T-shirts, singlets and other vests, of cotton', 
+                    dutyRate: 45, 
+                    category: 'Textiles & Clothing',
+                    chapter: '61',
+                    examples: ['Cotton T-shirts', 'Basic tees', 'Casual tops'],
+                    notes: 'Standard clothing protection rate'
+                },
+                
+                // Chapter 64: Footwear
+                '6403.51': { 
+                    description: 'Footwear with leather uppers, covering the ankle but not the calf', 
                     dutyRate: 30, 
-                    category: 'Textiles',
-                    examples: ['Leather shoes', 'Boots', 'Formal footwear']
+                    category: 'Textiles & Clothing',
+                    chapter: '64',
+                    examples: ['Ankle boots', 'Chelsea boots', 'Desert boots'],
+                    notes: 'Moderate protection for footwear industry'
+                },
+                '6404.11': { 
+                    description: 'Sports footwear; tennis shoes, basketball shoes, gym shoes, training shoes', 
+                    dutyRate: 30, 
+                    category: 'Textiles & Clothing',
+                    chapter: '64',
+                    examples: ['Running shoes', 'Tennis shoes', 'Athletic footwear'],
+                    notes: 'Sports footwear standard rate'
                 },
                 
-                // Automotive
-                '8703': { 
-                    description: 'Motor cars and passenger vehicles', 
+                // Chapter 87: Vehicles other than railway or tramway rolling-stock
+                '8703.23': { 
+                    description: 'Motor cars and other motor vehicles with spark-ignition internal combustion engine, 1500-3000cc', 
                     dutyRate: 25, 
                     category: 'Automotive',
-                    examples: ['Passenger cars', 'SUVs', 'Sedans']
+                    chapter: '87',
+                    examples: ['Sedan cars', 'Hatchbacks', 'Small SUVs'],
+                    notes: 'Standard passenger vehicle import duty'
                 },
-                '8708': { 
-                    description: 'Motor vehicle parts and accessories', 
+                '8708.29': { 
+                    description: 'Other parts and accessories of motor vehicle bodies', 
                     dutyRate: 20, 
                     category: 'Automotive',
-                    examples: ['Engine parts', 'Brake systems', 'Vehicle accessories']
+                    chapter: '87',
+                    examples: ['Bumpers', 'Fenders', 'Body panels', 'Doors'],
+                    notes: 'Auto parts import duty'
                 },
-                '4011': { 
-                    description: 'New pneumatic tyres of rubber', 
+                
+                // Chapter 40: Rubber and articles thereof
+                '4011.10': { 
+                    description: 'New pneumatic tyres, of rubber, for motor cars', 
                     dutyRate: 15, 
                     category: 'Automotive',
-                    examples: ['Car tyres', 'Truck tyres', 'Motorcycle tyres']
+                    chapter: '40',
+                    examples: ['Car tyres', 'Passenger vehicle tyres', 'Performance tyres'],
+                    notes: 'Tyre import protection'
                 },
                 
-                // Chemicals & Pharmaceuticals
-                '3004': { 
-                    description: 'Medicaments for therapeutic or prophylactic uses', 
+                // Chapter 30: Pharmaceutical products
+                '3004.10': { 
+                    description: 'Medicaments containing penicillins or derivatives thereof', 
                     dutyRate: 0, 
                     category: 'Pharmaceuticals',
-                    examples: ['Medicines', 'Vaccines', 'Medical drugs']
+                    chapter: '30',
+                    examples: ['Antibiotics', 'Penicillin medicines', 'Antimicrobial drugs'],
+                    notes: 'Essential medicines duty-free'
                 },
-                '3808': { 
-                    description: 'Insecticides, fungicides and similar products', 
-                    dutyRate: 10, 
-                    category: 'Chemicals',
-                    examples: ['Pesticides', 'Herbicides', 'Agricultural chemicals']
-                },
-                '3926': { 
-                    description: 'Other articles of plastics', 
-                    dutyRate: 10, 
-                    category: 'Chemicals',
-                    examples: ['Plastic containers', 'Plastic furniture', 'Plastic accessories']
+                '3004.90': { 
+                    description: 'Other medicaments for therapeutic or prophylactic uses', 
+                    dutyRate: 0, 
+                    category: 'Pharmaceuticals',
+                    chapter: '30',
+                    examples: ['Chronic medication', 'Vitamins', 'Pain relief medicines'],
+                    notes: 'General medicines duty exemption'
                 },
                 
-                // Food & Agriculture
-                '1701': { 
-                    description: 'Cane or beet sugar and chemically pure sucrose', 
-                    dutyRate: 0, 
-                    category: 'Food',
-                    examples: ['Raw sugar', 'Refined sugar', 'Sugar crystals']
+                // Chapter 38: Miscellaneous chemical products
+                '3808.50': { 
+                    description: 'Goods specified in Subheading Note 1 to this Chapter (Agricultural chemicals)', 
+                    dutyRate: 5, 
+                    category: 'Agricultural Chemicals',
+                    chapter: '38',
+                    examples: ['Pesticides', 'Herbicides', 'Fungicides'],
+                    notes: 'Agricultural input support'
                 },
-                '0901': { 
-                    description: 'Coffee, whether or not roasted or decaffeinated', 
+                
+                // Chapter 39: Plastics and articles thereof
+                '3926.90': { 
+                    description: 'Other articles of plastics and articles of other materials', 
+                    dutyRate: 10, 
+                    category: 'Industrial Materials',
+                    chapter: '39',
+                    examples: ['Plastic containers', 'Industrial plastics', 'Plastic components'],
+                    notes: 'General plastic products rate'
+                },
+                
+                // Chapter 17: Sugars and sugar confectionery
+                '1701.14': { 
+                    description: 'Other cane sugar', 
+                    dutyRate: 0, 
+                    category: 'Food & Agriculture',
+                    chapter: '17',
+                    examples: ['Raw cane sugar', 'Brown sugar', 'Unrefined sugar'],
+                    notes: 'Agricultural product support'
+                },
+                
+                // Chapter 09: Coffee, tea, mate and spices
+                '0901.21': { 
+                    description: 'Coffee, roasted, not decaffeinated', 
                     dutyRate: 7.5, 
-                    category: 'Food',
-                    examples: ['Coffee beans', 'Ground coffee', 'Instant coffee']
-                },
-                '2204': { 
-                    description: 'Wine of fresh grapes', 
-                    dutyRate: 0, 
-                    category: 'Food',
-                    examples: ['Red wine', 'White wine', 'Sparkling wine']
+                    category: 'Food & Agriculture',
+                    chapter: '09',
+                    examples: ['Roasted coffee beans', 'Premium coffee', 'Artisan coffee'],
+                    notes: 'Processed coffee import duty'
                 },
                 
-                // Metals & Materials
-                '7208': { 
-                    description: 'Flat-rolled products of iron or steel', 
+                // Chapter 22: Beverages, spirits and vinegar
+                '2204.21': { 
+                    description: 'Wine of fresh grapes, in containers holding 2 litres or less', 
+                    dutyRate: 0, 
+                    category: 'Food & Agriculture',
+                    chapter: '22',
+                    examples: ['Bottled wine', 'Premium wine', 'Table wine'],
+                    notes: 'Wine import friendly policy'
+                },
+                
+                // Chapter 72: Iron and steel
+                '7208.51': { 
+                    description: 'Flat-rolled products of iron/steel, not clad, plated or coated, thickness ≥ 4.75mm', 
                     dutyRate: 10, 
-                    category: 'Metals',
-                    examples: ['Steel sheets', 'Steel plates', 'Steel strips']
+                    category: 'Metals & Materials',
+                    chapter: '72',
+                    examples: ['Steel plates', 'Heavy steel sheets', 'Industrial steel'],
+                    notes: 'Steel industry protection'
                 },
-                '7601': { 
-                    description: 'Unwrought aluminium', 
+                
+                // Chapter 76: Aluminium and articles thereof
+                '7601.10': { 
+                    description: 'Aluminium, not alloyed, unwrought', 
                     dutyRate: 0, 
-                    category: 'Metals',
-                    examples: ['Aluminium ingots', 'Aluminium billets', 'Raw aluminium']
+                    category: 'Metals & Materials',
+                    chapter: '76',
+                    examples: ['Pure aluminium ingots', 'Primary aluminium', 'Aluminium billets'],
+                    notes: 'Raw material for manufacturing'
                 },
-                '4403': { 
-                    description: 'Wood in the rough', 
+                
+                // Chapter 44: Wood and articles of wood
+                '4403.20': { 
+                    description: 'Wood in the rough, whether or not stripped of bark, coniferous', 
                     dutyRate: 0, 
-                    category: 'Materials',
-                    examples: ['Timber logs', 'Raw wood', 'Lumber']
+                    category: 'Forestry & Materials',
+                    chapter: '44',
+                    examples: ['Pine logs', 'Softwood timber', 'Construction timber'],
+                    notes: 'Raw materials for construction'
+                },
+                
+                // Chapter 02: Meat and edible meat offal
+                '0201.10': { 
+                    description: 'Carcasses and half-carcasses of bovine animals, fresh or chilled', 
+                    dutyRate: 40, 
+                    category: 'Food & Agriculture',
+                    chapter: '02',
+                    examples: ['Beef carcasses', 'Fresh beef', 'Chilled beef'],
+                    notes: 'High protection for local farming'
+                },
+                
+                // Chapter 85: Electrical machinery and equipment
+                '8504.40': { 
+                    description: 'Static converters (power supplies, inverters, UPS)', 
+                    dutyRate: 0, 
+                    category: 'Electronics & IT',
+                    chapter: '85',
+                    examples: ['Power supplies', 'UPS systems', 'Inverters', 'Converters'],
+                    notes: 'Critical electrical infrastructure'
                 }
             },
 
@@ -1072,27 +1194,34 @@
                 const searchTerm = query.toLowerCase();
                 
                 for (const [code, data] of Object.entries(this.codes)) {
-                    // Search in code, description, category, and examples
-                    const searchText = `${code} ${data.description} ${data.category} ${data.examples.join(' ')}`.toLowerCase();
+                    // Search in code, description, category, examples, chapter, and notes
+                    const searchText = `${code} ${data.description} ${data.category} ${data.examples.join(' ')} ${data.chapter || ''} ${data.notes || ''}`.toLowerCase();
                     
                     if (searchText.includes(searchTerm)) {
                         results.push({
                             code,
                             ...data,
-                            relevance: this.calculateRelevance(searchText, searchTerm)
+                            relevance: this.calculateRelevance(searchText, searchTerm, code)
                         });
                     }
                 }
                 
-                // Sort by relevance
-                return results.sort((a, b) => b.relevance - a.relevance).slice(0, 10);
+                // Sort by relevance, then by chapter and code
+                return results.sort((a, b) => {
+                    if (b.relevance !== a.relevance) return b.relevance - a.relevance;
+                    return a.code.localeCompare(b.code);
+                }).slice(0, 12);
             },
 
-            calculateRelevance(text, searchTerm) {
+            calculateRelevance(text, searchTerm, code) {
                 let score = 0;
                 
                 // Exact code match gets highest score
-                if (text.startsWith(searchTerm)) score += 100;
+                if (code.toLowerCase() === searchTerm) score += 200;
+                if (code.toLowerCase().startsWith(searchTerm)) score += 150;
+                
+                // Partial code match
+                if (code.toLowerCase().includes(searchTerm)) score += 100;
                 
                 // Description match gets high score
                 if (text.includes(searchTerm)) score += 50;
@@ -2188,17 +2317,24 @@
                              onclick="App.selectHSCode('${result.code}', '${result.description}', ${result.dutyRate})">
                             <div class="flex justify-between items-start">
                                 <div class="flex-1">
-                                    <div class="font-medium text-gray-900">${result.code}</div>
-                                    <div class="text-sm text-gray-600">${result.description}</div>
-                                    <div class="text-xs text-gray-500 mt-1">
-                                        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full">${result.category}</span>
-                                        Examples: ${result.examples.slice(0, 2).join(', ')}
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <div class="font-bold text-blue-700">${result.code}</div>
+                                        ${result.chapter ? `<span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Ch. ${result.chapter}</span>` : ''}
+                                    </div>
+                                    <div class="text-sm text-gray-700 mb-2">${result.description}</div>
+                                    <div class="text-xs text-gray-500 space-y-1">
+                                        <div>
+                                            <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full mr-2">${result.category}</span>
+                                            ${result.notes ? `<span class="text-gray-600">${result.notes}</span>` : ''}
+                                        </div>
+                                        <div class="text-gray-600">Examples: ${result.examples.slice(0, 2).join(', ')}</div>
                                     </div>
                                 </div>
                                 <div class="ml-3 text-right">
-                                    <div class="text-sm font-medium ${result.dutyRate === 0 ? 'text-green-600' : 'text-orange-600'}">
-                                        ${result.dutyRate}% duty
+                                    <div class="text-lg font-bold ${result.dutyRate === 0 ? 'text-green-600' : result.dutyRate >= 30 ? 'text-red-600' : 'text-orange-600'}">
+                                        ${result.dutyRate}%
                                     </div>
+                                    <div class="text-xs text-gray-500">duty</div>
                                 </div>
                             </div>
                         </div>
