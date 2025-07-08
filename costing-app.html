@@ -3996,7 +3996,7 @@
         };
 
         // --- SHIPMENT TRACKING SYSTEM ---
-        const ShipmentTracker = {
+        window.ShipmentTracker = {
             trackingTemplates: {
                 'asia-dbn': {
                     name: 'Asia to Durban',
@@ -4547,20 +4547,29 @@
             },
 
             removeActiveShipment(shipmentId) {
+                console.log('Removing shipment:', shipmentId);
                 const index = this.activeShipments.findIndex(s => s.id === shipmentId);
                 if (index >= 0) {
                     this.activeShipments.splice(index, 1);
                     this.saveActiveShipments();
                     this.loadActiveShipments();
                     showToast('Shipment removed from active tracking', 'success');
+                } else {
+                    console.error('Shipment not found:', shipmentId);
+                    showToast('Shipment not found', 'error');
                 }
             },
 
             async refreshShipment(shipmentId) {
+                console.log('Refreshing shipment:', shipmentId);
                 showToast('Refreshing shipment data...', 'info');
                 
                 const shipment = this.activeShipments.find(s => s.id === shipmentId);
-                if (!shipment) return;
+                if (!shipment) {
+                    console.error('Shipment not found for refresh:', shipmentId);
+                    showToast('Shipment not found', 'error');
+                    return;
+                }
 
                 try {
                     // Re-fetch tracking data
@@ -4570,6 +4579,7 @@
                     this.addToActiveShipments(updatedData, shipment.carrier);
                     
                     showToast('Shipment data refreshed', 'success');
+                    console.log('Shipment refreshed successfully:', shipmentId);
                 } catch (error) {
                     console.error('Refresh error:', error);
                     showToast('Failed to refresh shipment data', 'error');
@@ -4755,14 +4765,144 @@
                 showToast('Costing populated from tracking data', 'success');
             },
 
-            viewShipmentDetails(shipmentId) {
+            async viewShipmentDetails(shipmentId) {
                 const shipment = this.activeShipments.find(s => s.id === shipmentId);
-                if (!shipment) return;
+                if (!shipment) {
+                    showToast('Shipment not found', 'error');
+                    return;
+                }
 
-                // Simulate loading the tracking details
-                this.fetchTrackingData(shipment.carrier.toLowerCase(), shipment.trackingNumber)
-                    .then(data => this.displayTrackingResults(data))
-                    .catch(error => showToast('Failed to load shipment details', 'error'));
+                try {
+                    // Fetch latest tracking data
+                    const data = await this.fetchTrackingData(shipment.carrier.toLowerCase(), shipment.trackingNumber);
+                    
+                    // Create modal
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+                    modal.innerHTML = `
+                        <div class="bg-white rounded-lg p-6 w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-2xl font-bold text-gray-800">📦 Shipment Details</h2>
+                                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                                    ✕
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Shipment Information -->
+                                <div class="space-y-4">
+                                    <h3 class="text-lg font-semibold text-gray-700">🚢 Shipment Information</h3>
+                                    <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Tracking Number:</span>
+                                            <span class="font-medium">${data.trackingNumber}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Carrier:</span>
+                                            <span class="font-medium">${data.carrier}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Vessel:</span>
+                                            <span class="font-medium">${data.vessel}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Status:</span>
+                                            <span class="px-2 py-1 text-xs rounded-full ${this.getStatusColor(data.status)}">${data.status}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Progress:</span>
+                                            <div class="flex items-center space-x-2">
+                                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-blue-600 h-2 rounded-full" style="width: ${data.progress}%"></div>
+                                                </div>
+                                                <span class="text-sm font-medium">${data.progress}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Location & Schedule -->
+                                <div class="space-y-4">
+                                    <h3 class="text-lg font-semibold text-gray-700">📍 Location & Schedule</h3>
+                                    <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Current Location:</span>
+                                            <span class="font-medium">${data.location}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Coordinates:</span>
+                                            <span class="font-medium text-blue-600">${data.coordinates?.lat || 'N/A'}, ${data.coordinates?.lng || 'N/A'}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">ETA:</span>
+                                            <span class="font-medium">${data.eta}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Last Update:</span>
+                                            <span class="font-medium">${new Date(data.lastUpdate).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Environmental Conditions -->
+                                <div class="space-y-4">
+                                    <h3 class="text-lg font-semibold text-gray-700">🌡️ Environmental Conditions</h3>
+                                    <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Temperature:</span>
+                                            <span class="font-medium">${data.temperature}°C</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Humidity:</span>
+                                            <span class="font-medium">${data.humidity}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tracking Events -->
+                                <div class="space-y-4">
+                                    <h3 class="text-lg font-semibold text-gray-700">📋 Tracking Timeline</h3>
+                                    <div class="bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto">
+                                        <div class="space-y-3">
+                                            ${data.events.map(event => `
+                                                <div class="flex items-start space-x-3">
+                                                    <div class="flex-shrink-0 w-3 h-3 rounded-full mt-1 ${
+                                                        event.status === 'completed' ? 'bg-green-500' :
+                                                        event.status === 'current' ? 'bg-blue-500' :
+                                                        'bg-gray-300'
+                                                    }"></div>
+                                                    <div class="flex-1">
+                                                        <div class="flex justify-between items-start">
+                                                            <div>
+                                                                <p class="text-sm font-medium text-gray-800">${event.event}</p>
+                                                                <p class="text-xs text-gray-600">${event.location}</p>
+                                                            </div>
+                                                            <span class="text-xs text-gray-500">${event.date}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 flex justify-between">
+                                <button onclick="ShipmentTracker.refreshShipment('${shipmentId}'); this.closest('.fixed').remove();" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                    🔄 Refresh Data
+                                </button>
+                                <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                } catch (error) {
+                    console.error('View error:', error);
+                    showToast('Failed to load shipment details', 'error');
+                }
             },
 
             extractRouteInfo(trackingData) {
