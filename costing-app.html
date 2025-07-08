@@ -6717,12 +6717,169 @@
             ],
 
             init() {
-                this.scheduleData = [...this.mockSchedules];
+                this.scheduleData = this.generateCurrentSchedules();
                 this.filteredData = [...this.scheduleData];
                 this.loadPopularRoutes();
                 this.loadLiveUpdates();
                 this.bindScheduleEvents();
                 this.generateMoreSchedules();
+            },
+
+            generateCurrentSchedules() {
+                const now = new Date();
+                const schedules = [];
+                
+                // Base schedule templates
+                const scheduleTemplates = [
+                    {
+                        carrier: 'MSC',
+                        vessel: 'MSC AMSTERDAM',
+                        service: 'Silk Service',
+                        origin: 'CNSHA',
+                        originName: 'Shanghai, China',
+                        destination: 'ZADUR',
+                        destinationName: 'Durban, South Africa',
+                        transitTime: 21,
+                        frequency: 'Weekly',
+                        vesselSize: '14,000 TEU'
+                    },
+                    {
+                        carrier: 'Maersk',
+                        vessel: 'MAERSK CAPE TOWN',
+                        service: 'AE7',
+                        origin: 'NLRTM',
+                        originName: 'Rotterdam, Netherlands',
+                        destination: 'ZACPT',
+                        destinationName: 'Cape Town, South Africa',
+                        transitTime: 15,
+                        frequency: 'Weekly',
+                        vesselSize: '18,000 TEU'
+                    },
+                    {
+                        carrier: 'CMA CGM',
+                        vessel: 'CMA CGM BOUGAINVILLE',
+                        service: 'FAL1',
+                        origin: 'CNSHA',
+                        originName: 'Shanghai, China',
+                        destination: 'ZADUR',
+                        destinationName: 'Durban, South Africa',
+                        transitTime: 23,
+                        frequency: 'Weekly',
+                        vesselSize: '16,000 TEU'
+                    },
+                    {
+                        carrier: 'Hapag-Lloyd',
+                        vessel: 'HAMBURG EXPRESS',
+                        service: 'SAS',
+                        origin: 'DEHAM',
+                        originName: 'Hamburg, Germany',
+                        destination: 'ZADUR',
+                        destinationName: 'Durban, South Africa',
+                        transitTime: 17,
+                        frequency: 'Weekly',
+                        vesselSize: '13,500 TEU'
+                    },
+                    {
+                        carrier: 'COSCO',
+                        vessel: 'COSCO SINGAPORE',
+                        service: 'ASF',
+                        origin: 'CNSHA',
+                        originName: 'Shanghai, China',
+                        destination: 'ZACPT',
+                        destinationName: 'Cape Town, South Africa',
+                        transitTime: 24,
+                        frequency: 'Weekly',
+                        vesselSize: '12,500 TEU'
+                    }
+                ];
+                
+                // Generate schedules for next 60 days
+                scheduleTemplates.forEach((template, index) => {
+                    for (let week = 0; week < 8; week++) {
+                        const departureDate = new Date(now.getTime() + (week * 7 + index) * 24 * 60 * 60 * 1000);
+                        const arrivalDate = new Date(departureDate.getTime() + template.transitTime * 24 * 60 * 60 * 1000);
+                        const cutOffDate = new Date(departureDate.getTime() - 2 * 24 * 60 * 60 * 1000);
+                        
+                        const schedule = {
+                            id: `${template.carrier.replace(' ', '_')}_${template.vessel.replace(' ', '_')}_${departureDate.toISOString().split('T')[0].replace(/-/g, '')}`,
+                            carrier: template.carrier,
+                            vessel: template.vessel,
+                            service: template.service,
+                            origin: template.origin,
+                            originName: template.originName,
+                            destination: template.destination,
+                            destinationName: template.destinationName,
+                            departure: departureDate.toISOString(),
+                            arrival: arrivalDate.toISOString(),
+                            transitTime: template.transitTime,
+                            frequency: template.frequency,
+                            cutOff: cutOffDate.toISOString(),
+                            vesselSize: template.vesselSize,
+                            status: 'Confirmed',
+                            ports: this.generatePortRotation(template.origin, template.destination, departureDate, arrivalDate)
+                        };
+                        
+                        schedules.push(schedule);
+                    }
+                });
+                
+                console.log('Generated', schedules.length, 'current schedules');
+                return schedules;
+            },
+
+            generatePortRotation(origin, destination, departureDate, arrivalDate) {
+                const ports = [];
+                const totalTime = arrivalDate.getTime() - departureDate.getTime();
+                
+                // Add origin port
+                ports.push({
+                    port: origin,
+                    name: this.getPortName(origin),
+                    arrival: null,
+                    departure: departureDate.toISOString()
+                });
+                
+                // Add transit ports based on route
+                const transitPorts = this.getTransitPorts(origin, destination);
+                transitPorts.forEach((port, index) => {
+                    const arrivalTime = new Date(departureDate.getTime() + (totalTime * (index + 1) / (transitPorts.length + 1)));
+                    const departureTime = new Date(arrivalTime.getTime() + 6 * 60 * 60 * 1000); // 6 hour port stay
+                    
+                    ports.push({
+                        port: port.code,
+                        name: port.name,
+                        arrival: arrivalTime.toISOString(),
+                        departure: departureTime.toISOString()
+                    });
+                });
+                
+                // Add destination port
+                ports.push({
+                    port: destination,
+                    name: this.getPortName(destination),
+                    arrival: arrivalDate.toISOString(),
+                    departure: null
+                });
+                
+                return ports;
+            },
+
+            getPortName(portCode) {
+                const port = GLOBAL_PORTS.find(p => p.code === portCode);
+                return port ? port.name : portCode;
+            },
+
+            getTransitPorts(origin, destination) {
+                // Common transit ports for major routes
+                const routes = {
+                    'CNSHA-ZADUR': [{ code: 'SGSIN', name: 'Singapore' }],
+                    'CNSHA-ZACPT': [{ code: 'SGSIN', name: 'Singapore' }],
+                    'NLRTM-ZACPT': [{ code: 'GBFXT', name: 'Felixstowe' }],
+                    'DEHAM-ZADUR': [{ code: 'NLRTM', name: 'Rotterdam' }, { code: 'GBFXT', name: 'Felixstowe' }]
+                };
+                
+                const routeKey = `${origin}-${destination}`;
+                return routes[routeKey] || [];
             },
 
             bindScheduleEvents() {
@@ -6806,6 +6963,9 @@
                 const destination = document.getElementById('schedule-destination').value;
                 const timeframe = parseInt(document.getElementById('schedule-timeframe').value);
 
+                console.log('Search parameters:', { origin, destination, timeframe });
+                console.log('Available schedules:', this.scheduleData.length);
+
                 if (!origin || !destination) {
                     showToast('Please select both origin and destination ports', 'error');
                     return;
@@ -6822,9 +6982,21 @@
                     maxDate.setDate(now.getDate() + timeframe);
                     const isInTimeframe = departureDate >= now && departureDate <= maxDate;
                     
+                    console.log('Schedule check:', {
+                        scheduleId: schedule.id,
+                        scheduleOrigin: schedule.origin,
+                        scheduleDestination: schedule.destination,
+                        searchOrigin: origin,
+                        searchDestination: destination,
+                        matchesRoute,
+                        departureDate: departureDate.toISOString(),
+                        isInTimeframe
+                    });
+                    
                     return matchesRoute && isInTimeframe;
                 });
 
+                console.log('Filtered results:', this.filteredData.length);
                 this.applyCarrierFilter();
                 this.displayScheduleResults();
             },
