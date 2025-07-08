@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git remote add:*)",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "WebFetch(domain:api.exchangerate-api.com)",
+      "Bash(rg:*)",
+      "Bash(node server.js)",
+      "WebFetch(domain:incodocs.com)",
+      "WebFetch(domain:www.freightnews.co.za)",
+      "Bash(python:*)",
+      "Bash(grep:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(pkill:*)",
+      "Bash(node_modules/.bin/vite:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(node:*)",
+      "Bash(touch:*)",
+      "Bash(git checkout:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": []
+  },
+  "model": "claude-sonnet-4-20250514"
+}

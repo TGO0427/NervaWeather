@@ -15,10 +15,5 @@
       "src": "/(.*)",
       "dest": "/costing-app.html"
     }
-  ],
-  "functions": {
-    "costing-app.html": {
-      "includeFiles": ["whatsapp-config.js"]
-    }
-  }
+  ]
 }
