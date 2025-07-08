@@ -1335,17 +1335,13 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-600 mb-1">Origin</label>
                                         <select id="carrier-pol" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500">
-                                            <option value="Shanghai">🇨🇳 Shanghai, China</option>
-                                            <option value="Rotterdam">🇳🇱 Rotterdam, Netherlands</option>
-                                            <option value="Los Angeles">🇺🇸 Los Angeles, USA</option>
+                                            <option value="">Select Origin Port</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-600 mb-1">Destination</label>
                                         <select id="carrier-pod" class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500">
-                                            <option value="Durban">🇿🇦 Durban, South Africa</option>
-                                            <option value="Cape Town">🇿🇦 Cape Town, South Africa</option>
-                                            <option value="Mumbai">🇮🇳 Mumbai, India</option>
+                                            <option value="">Select Destination Port</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1433,26 +1429,20 @@
                                         <div id="route-waypoints" class="space-y-3">
                                             <div class="flex items-center space-x-3">
                                                 <span class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">1</span>
-                                                <select class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
-                                                    <option>🇨🇳 Shanghai, China</option>
-                                                    <option>🇸🇬 Singapore</option>
-                                                    <option>🇳🇱 Rotterdam, Netherlands</option>
+                                                <select id="route-waypoint-1" class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
+                                                    <option value="">Select Origin Port</option>
                                                 </select>
                                             </div>
                                             <div class="flex items-center space-x-3">
                                                 <span class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">2</span>
-                                                <select class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
-                                                    <option>🇸🇬 Singapore</option>
-                                                    <option>🇦🇪 Dubai, UAE</option>
-                                                    <option>🇿🇦 Cape Town, South Africa</option>
+                                                <select id="route-waypoint-2" class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
+                                                    <option value="">Select Transit Port</option>
                                                 </select>
                                             </div>
                                             <div class="flex items-center space-x-3">
                                                 <span class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-medium">3</span>
-                                                <select class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
-                                                    <option>🇿🇦 Durban, South Africa</option>
-                                                    <option>🇿🇦 Cape Town, South Africa</option>
-                                                    <option>🇲🇿 Maputo, Mozambique</option>
+                                                <select id="route-waypoint-3" class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
+                                                    <option value="">Select Destination Port</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -3994,6 +3984,151 @@
                 }
             }
         };
+
+        // --- GLOBAL PORTS DATABASE ---
+        const GLOBAL_PORTS = [
+            // Africa
+            { code: 'ZADUR', name: 'Durban', country: 'South Africa', flag: '🇿🇦' },
+            { code: 'ZACPT', name: 'Cape Town', country: 'South Africa', flag: '🇿🇦' },
+            { code: 'ZAJNB', name: 'Johannesburg', country: 'South Africa', flag: '🇿🇦' },
+            { code: 'ZAEBB', name: 'East London', country: 'South Africa', flag: '🇿🇦' },
+            { code: 'ZAPLE', name: 'Port Elizabeth', country: 'South Africa', flag: '🇿🇦' },
+            { code: 'ZAMPM', name: 'Maputo', country: 'Mozambique', flag: '🇲🇿' },
+            { code: 'MZMPM', name: 'Maputo', country: 'Mozambique', flag: '🇲🇿' },
+            { code: 'EGALY', name: 'Alexandria', country: 'Egypt', flag: '🇪🇬' },
+            { code: 'EGSEZ', name: 'Suez', country: 'Egypt', flag: '🇪🇬' },
+            { code: 'EGPSD', name: 'Port Said', country: 'Egypt', flag: '🇪🇬' },
+            { code: 'MAAPT', name: 'Casablanca', country: 'Morocco', flag: '🇲🇦' },
+            { code: 'TNSFA', name: 'Sfax', country: 'Tunisia', flag: '🇹🇳' },
+            
+            // Asia - China
+            { code: 'CNSHA', name: 'Shanghai', country: 'China', flag: '🇨🇳' },
+            { code: 'CNNGB', name: 'Ningbo', country: 'China', flag: '🇨🇳' },
+            { code: 'CNYTN', name: 'Yantian', country: 'China', flag: '🇨🇳' },
+            { code: 'CNSZN', name: 'Shenzhen', country: 'China', flag: '🇨🇳' },
+            { code: 'CNQIN', name: 'Qingdao', country: 'China', flag: '🇨🇳' },
+            { code: 'CNTXG', name: 'Tianjin', country: 'China', flag: '🇨🇳' },
+            { code: 'CNXMN', name: 'Xiamen', country: 'China', flag: '🇨🇳' },
+            { code: 'CNDLC', name: 'Dalian', country: 'China', flag: '🇨🇳' },
+            { code: 'HKHKG', name: 'Hong Kong', country: 'Hong Kong', flag: '🇭🇰' },
+            
+            // Asia - Southeast Asia
+            { code: 'SGSIN', name: 'Singapore', country: 'Singapore', flag: '🇸🇬' },
+            { code: 'MYPKG', name: 'Port Klang', country: 'Malaysia', flag: '🇲🇾' },
+            { code: 'MYTPP', name: 'Tanjung Pelepas', country: 'Malaysia', flag: '🇲🇾' },
+            { code: 'THBKK', name: 'Bangkok', country: 'Thailand', flag: '🇹🇭' },
+            { code: 'THLCH', name: 'Laem Chabang', country: 'Thailand', flag: '🇹🇭' },
+            { code: 'VNSGN', name: 'Ho Chi Minh City', country: 'Vietnam', flag: '🇻🇳' },
+            { code: 'VNHPH', name: 'Haiphong', country: 'Vietnam', flag: '🇻🇳' },
+            { code: 'IDJKT', name: 'Jakarta', country: 'Indonesia', flag: '🇮🇩' },
+            { code: 'IDTPP', name: 'Tanjung Priok', country: 'Indonesia', flag: '🇮🇩' },
+            { code: 'PHMNL', name: 'Manila', country: 'Philippines', flag: '🇵🇭' },
+            
+            // Asia - Japan & Korea
+            { code: 'JPNGO', name: 'Nagoya', country: 'Japan', flag: '🇯🇵' },
+            { code: 'JPTYO', name: 'Tokyo', country: 'Japan', flag: '🇯🇵' },
+            { code: 'JPOSA', name: 'Osaka', country: 'Japan', flag: '🇯🇵' },
+            { code: 'JPYOK', name: 'Yokohama', country: 'Japan', flag: '🇯🇵' },
+            { code: 'KRPUS', name: 'Busan', country: 'South Korea', flag: '🇰🇷' },
+            { code: 'KRINC', name: 'Incheon', country: 'South Korea', flag: '🇰🇷' },
+            
+            // Asia - India & Middle East
+            { code: 'INNSA', name: 'Mumbai', country: 'India', flag: '🇮🇳' },
+            { code: 'INCCU', name: 'Chennai', country: 'India', flag: '🇮🇳' },
+            { code: 'INCOK', name: 'Kolkata', country: 'India', flag: '🇮🇳' },
+            { code: 'INJNP', name: 'Jawaharlal Nehru Port', country: 'India', flag: '🇮🇳' },
+            { code: 'AEJEA', name: 'Jebel Ali', country: 'UAE', flag: '🇦🇪' },
+            { code: 'AEDXB', name: 'Dubai', country: 'UAE', flag: '🇦🇪' },
+            { code: 'AEAUH', name: 'Abu Dhabi', country: 'UAE', flag: '🇦🇪' },
+            { code: 'QADOH', name: 'Doha', country: 'Qatar', flag: '🇶🇦' },
+            { code: 'KWKWI', name: 'Kuwait', country: 'Kuwait', flag: '🇰🇼' },
+            { code: 'SADMM', name: 'Dammam', country: 'Saudi Arabia', flag: '🇸🇦' },
+            { code: 'SAJED', name: 'Jeddah', country: 'Saudi Arabia', flag: '🇸🇦' },
+            
+            // Europe - Northern Europe
+            { code: 'NLRTM', name: 'Rotterdam', country: 'Netherlands', flag: '🇳🇱' },
+            { code: 'DEHAM', name: 'Hamburg', country: 'Germany', flag: '🇩🇪' },
+            { code: 'DEBRV', name: 'Bremerhaven', country: 'Germany', flag: '🇩🇪' },
+            { code: 'BEANR', name: 'Antwerp', country: 'Belgium', flag: '🇧🇪' },
+            { code: 'GBFXT', name: 'Felixstowe', country: 'United Kingdom', flag: '🇬🇧' },
+            { code: 'GBSOU', name: 'Southampton', country: 'United Kingdom', flag: '🇬🇧' },
+            { code: 'GBLGP', name: 'London Gateway', country: 'United Kingdom', flag: '🇬🇧' },
+            { code: 'FRLEH', name: 'Le Havre', country: 'France', flag: '🇫🇷' },
+            { code: 'FRMRS', name: 'Marseille', country: 'France', flag: '🇫🇷' },
+            { code: 'DKAAR', name: 'Aarhus', country: 'Denmark', flag: '🇩🇰' },
+            { code: 'DKCPH', name: 'Copenhagen', country: 'Denmark', flag: '🇩🇰' },
+            { code: 'SEGOT', name: 'Gothenburg', country: 'Sweden', flag: '🇸🇪' },
+            { code: 'NOSVG', name: 'Stavanger', country: 'Norway', flag: '🇳🇴' },
+            { code: 'FIHEL', name: 'Helsinki', country: 'Finland', flag: '🇫🇮' },
+            
+            // Europe - Southern Europe
+            { code: 'ESVLC', name: 'Valencia', country: 'Spain', flag: '🇪🇸' },
+            { code: 'ESBCN', name: 'Barcelona', country: 'Spain', flag: '🇪🇸' },
+            { code: 'ESALG', name: 'Algeciras', country: 'Spain', flag: '🇪🇸' },
+            { code: 'PTLIS', name: 'Lisbon', country: 'Portugal', flag: '🇵🇹' },
+            { code: 'ITSPE', name: 'La Spezia', country: 'Italy', flag: '🇮🇹' },
+            { code: 'ITGOA', name: 'Genoa', country: 'Italy', flag: '🇮🇹' },
+            { code: 'ITLIV', name: 'Livorno', country: 'Italy', flag: '🇮🇹' },
+            { code: 'ITNAP', name: 'Naples', country: 'Italy', flag: '🇮🇹' },
+            { code: 'GRPIR', name: 'Piraeus', country: 'Greece', flag: '🇬🇷' },
+            { code: 'TRIST', name: 'Istanbul', country: 'Turkey', flag: '🇹🇷' },
+            { code: 'TRMER', name: 'Mersin', country: 'Turkey', flag: '🇹🇷' },
+            
+            // Europe - Eastern Europe
+            { code: 'PLGDN', name: 'Gdansk', country: 'Poland', flag: '🇵🇱' },
+            { code: 'RUDME', name: 'Moscow', country: 'Russia', flag: '🇷🇺' },
+            { code: 'RULED', name: 'St. Petersburg', country: 'Russia', flag: '🇷🇺' },
+            { code: 'UAODS', name: 'Odessa', country: 'Ukraine', flag: '🇺🇦' },
+            { code: 'ROCND', name: 'Constanta', country: 'Romania', flag: '🇷🇴' },
+            
+            // North America - USA
+            { code: 'USLAX', name: 'Los Angeles', country: 'USA', flag: '🇺🇸' },
+            { code: 'USLGB', name: 'Long Beach', country: 'USA', flag: '🇺🇸' },
+            { code: 'USNYC', name: 'New York', country: 'USA', flag: '🇺🇸' },
+            { code: 'USNJY', name: 'New Jersey', country: 'USA', flag: '🇺🇸' },
+            { code: 'USSAV', name: 'Savannah', country: 'USA', flag: '🇺🇸' },
+            { code: 'USHOU', name: 'Houston', country: 'USA', flag: '🇺🇸' },
+            { code: 'USMIA', name: 'Miami', country: 'USA', flag: '🇺🇸' },
+            { code: 'USSEA', name: 'Seattle', country: 'USA', flag: '🇺🇸' },
+            { code: 'USOAK', name: 'Oakland', country: 'USA', flag: '🇺🇸' },
+            { code: 'USBOS', name: 'Boston', country: 'USA', flag: '🇺🇸' },
+            { code: 'USBAL', name: 'Baltimore', country: 'USA', flag: '🇺🇸' },
+            
+            // North America - Canada
+            { code: 'CAVAN', name: 'Vancouver', country: 'Canada', flag: '🇨🇦' },
+            { code: 'CATOR', name: 'Toronto', country: 'Canada', flag: '🇨🇦' },
+            { code: 'CAHAL', name: 'Halifax', country: 'Canada', flag: '🇨🇦' },
+            { code: 'CAMTR', name: 'Montreal', country: 'Canada', flag: '🇨🇦' },
+            
+            // South America
+            { code: 'BRSST', name: 'Santos', country: 'Brazil', flag: '🇧🇷' },
+            { code: 'BRRIG', name: 'Rio Grande', country: 'Brazil', flag: '🇧🇷' },
+            { code: 'CLSAI', name: 'San Antonio', country: 'Chile', flag: '🇨🇱' },
+            { code: 'CLVAP', name: 'Valparaiso', country: 'Chile', flag: '🇨🇱' },
+            { code: 'ARBUE', name: 'Buenos Aires', country: 'Argentina', flag: '🇦🇷' },
+            { code: 'PECLL', name: 'Callao', country: 'Peru', flag: '🇵🇪' },
+            { code: 'COGUA', name: 'Guayaquil', country: 'Ecuador', flag: '🇪🇨' },
+            { code: 'VECCS', name: 'Caracas', country: 'Venezuela', flag: '🇻🇪' },
+            
+            // Australia & Oceania
+            { code: 'AUSYD', name: 'Sydney', country: 'Australia', flag: '🇦🇺' },
+            { code: 'AUMEL', name: 'Melbourne', country: 'Australia', flag: '🇦🇺' },
+            { code: 'AUBNE', name: 'Brisbane', country: 'Australia', flag: '🇦🇺' },
+            { code: 'AUPER', name: 'Perth', country: 'Australia', flag: '🇦🇺' },
+            { code: 'AUADL', name: 'Adelaide', country: 'Australia', flag: '🇦🇺' },
+            { code: 'NZAKL', name: 'Auckland', country: 'New Zealand', flag: '🇳🇿' },
+            { code: 'NZTRG', name: 'Tauranga', country: 'New Zealand', flag: '🇳🇿' }
+        ];
+
+        // Helper function to generate port options HTML
+        function generatePortOptions(selectedValue = '', useCode = false) {
+            return GLOBAL_PORTS.map(port => {
+                const value = useCode ? port.code : port.name;
+                return `<option value="${value}" ${selectedValue === value ? 'selected' : ''}>
+                    ${port.flag} ${port.name}, ${port.country}
+                </option>`;
+            }).join('');
+        }
 
         // --- SHIPMENT TRACKING SYSTEM ---
         window.ShipmentTracker = {
@@ -9146,7 +9281,68 @@
             // Set OpenAI API key from environment or fallback
             window.OPENAI_API_KEY = window.ENV?.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY';
             setTimeout(() => SupplyChainChat.init(), 1000);
+            
+            // Initialize port dropdowns
+            initializePortDropdowns();
         });
+        
+        // Initialize all port dropdowns with comprehensive port list
+        function initializePortDropdowns() {
+            const portOptions = generatePortOptions();
+            const portOptionsWithCodes = generatePortOptions('', true);
+            
+            // Carrier Optimization dropdowns
+            const carrierPolSelect = document.getElementById('carrier-pol');
+            const carrierPodSelect = document.getElementById('carrier-pod');
+            
+            if (carrierPolSelect) {
+                carrierPolSelect.innerHTML = '<option value="">Select Origin Port</option>' + portOptions;
+            }
+            if (carrierPodSelect) {
+                carrierPodSelect.innerHTML = '<option value="">Select Destination Port</option>' + portOptions;
+            }
+            
+            // Route Planning waypoint dropdowns
+            for (let i = 1; i <= 3; i++) {
+                const waypointSelect = document.getElementById(`route-waypoint-${i}`);
+                if (waypointSelect) {
+                    let placeholder = 'Select Port';
+                    if (i === 1) placeholder = 'Select Origin Port';
+                    else if (i === 3) placeholder = 'Select Destination Port';
+                    else placeholder = 'Select Transit Port';
+                    
+                    waypointSelect.innerHTML = `<option value="">${placeholder}</option>` + portOptions;
+                }
+            }
+            
+            // Weather Intelligence dropdowns
+            const weatherPolSelect = document.getElementById('weather-pol-select');
+            const weatherPodSelect = document.getElementById('weather-pod-select');
+            
+            if (weatherPolSelect) {
+                weatherPolSelect.innerHTML = '<option value="">Select Origin Port</option>' + portOptions;
+                // Set default to Shanghai for demo purposes
+                weatherPolSelect.value = 'Shanghai';
+            }
+            if (weatherPodSelect) {
+                weatherPodSelect.innerHTML = '<option value="">Select Destination Port</option>' + portOptions;
+                // Set default to Durban for demo purposes
+                weatherPodSelect.value = 'Durban';
+            }
+            
+            // Schedule Search dropdowns (use port codes for values)
+            const scheduleOriginSelect = document.getElementById('schedule-origin');
+            const scheduleDestinationSelect = document.getElementById('schedule-destination');
+            
+            if (scheduleOriginSelect) {
+                scheduleOriginSelect.innerHTML = '<option value="">Select Origin Port</option>' + portOptionsWithCodes;
+            }
+            if (scheduleDestinationSelect) {
+                scheduleDestinationSelect.innerHTML = '<option value="">Select Destination Port</option>' + portOptionsWithCodes;
+            }
+            
+            console.log('✅ Port dropdowns initialized with', GLOBAL_PORTS.length, 'global ports');
+        }
 
         // Weather Intelligence System
         window.WeatherIntelligence = {
