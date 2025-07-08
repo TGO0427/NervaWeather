@@ -5134,6 +5134,90 @@
                 showToast(`✅ Alerts sent successfully: ${alertSummary.join(', ')}`, 'success');
             },
 
+            // Bulk status update functionality
+            async bulkUpdateStatus() {
+                const selectedShipments = this.getSelectedShipments();
+                if (selectedShipments.length === 0) {
+                    showToast('Please select shipments to update status', 'warning');
+                    return;
+                }
+
+                // Create status update modal
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+                        <h3 class="text-lg font-semibold mb-4">Update Status for ${selectedShipments.length} Shipments</h3>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">New Status:</label>
+                            <select id="bulk-status-select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Loading">🚛 Loading</option>
+                                <option value="Departed">🚢 Departed</option>
+                                <option value="In Transit">🌊 In Transit</option>
+                                <option value="Customs">📋 Customs</option>
+                                <option value="Delivered">✅ Delivered</option>
+                                <option value="Delayed">⚠️ Delayed</option>
+                                <option value="Weather Hold">🌪️ Weather Hold</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Update Notes (Optional):</label>
+                            <textarea id="bulk-status-notes" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Enter any additional notes for this status update..."></textarea>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-2">
+                            <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300">
+                                Cancel
+                            </button>
+                            <button onclick="MultiShipmentTracker.executeStatusUpdate()" class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                Update Status
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            },
+
+            // Execute the status update
+            executeStatusUpdate() {
+                const selectedShipments = this.getSelectedShipments();
+                const newStatus = document.getElementById('bulk-status-select').value;
+                const notes = document.getElementById('bulk-status-notes').value;
+                
+                // Update status for all selected shipments
+                selectedShipments.forEach(shipment => {
+                    shipment.status = newStatus;
+                    shipment.lastUpdated = new Date().toLocaleDateString();
+                    
+                    // Add status update to history
+                    if (!shipment.statusHistory) {
+                        shipment.statusHistory = [];
+                    }
+                    shipment.statusHistory.push({
+                        status: newStatus,
+                        timestamp: new Date().toISOString(),
+                        notes: notes || 'Bulk status update'
+                    });
+                });
+                
+                // Update the display
+                this.updatePortfolioDisplay();
+                this.updatePortfolioStats();
+                
+                // Close modal
+                document.querySelector('.fixed').remove();
+                
+                // Show success message
+                showToast(`✅ Status updated to "${newStatus}" for ${selectedShipments.length} shipments`, 'success');
+                
+                // Clear selections
+                document.getElementById('select-all-shipments').checked = false;
+                this.toggleSelectAll();
+            },
+
             // Determine which alert types to send based on shipment status
             determineAlertTypes(shipment) {
                 const alertTypes = [];
