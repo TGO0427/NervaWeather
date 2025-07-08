@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "dev": "python -m http.server 3000",
-    "build": "echo 'No build step required for static HTML'",
+    "build": "node build-env.js",
     "start": "echo 'Static HTML deployment'",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",

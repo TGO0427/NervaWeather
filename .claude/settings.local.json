@@ -24,7 +24,8 @@
       "Bash(node:*)",
       "Bash(touch:*)",
       "Bash(git checkout:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch costing-app.html; git rm --cached --ignore-unmatch public/costing-app.html' --prune-empty --tag-name-filter cat -- --all)"
     ],
     "deny": []
   },
