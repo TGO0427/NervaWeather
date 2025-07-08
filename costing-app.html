@@ -6582,7 +6582,7 @@
         };
 
         // --- VESSEL SCHEDULE SYSTEM ---
-        const VesselScheduler = {
+        window.VesselScheduler = {
             scheduleData: [],
             filteredData: [],
             activeCarrierFilter: 'all',
@@ -6717,15 +6717,23 @@
             ],
 
             init() {
-                this.scheduleData = this.generateCurrentSchedules();
-                this.filteredData = [...this.scheduleData];
-                this.loadPopularRoutes();
-                this.loadLiveUpdates();
-                this.bindScheduleEvents();
-                this.generateMoreSchedules();
+                console.log('🚢 VesselScheduler.init() called');
+                try {
+                    this.scheduleData = this.generateCurrentSchedules();
+                    this.filteredData = [...this.scheduleData];
+                    console.log('📅 Schedule data initialized:', this.scheduleData.length, 'schedules');
+                    this.loadPopularRoutes();
+                    this.loadLiveUpdates();
+                    this.bindScheduleEvents();
+                    this.generateMoreSchedules();
+                    console.log('✅ VesselScheduler initialization complete');
+                } catch (error) {
+                    console.error('❌ VesselScheduler initialization error:', error);
+                }
             },
 
             generateCurrentSchedules() {
+                console.log('🚢 Generating current schedules...');
                 const now = new Date();
                 const schedules = [];
                 
@@ -6883,9 +6891,16 @@
             },
 
             bindScheduleEvents() {
+                console.log('🔗 Binding schedule events...');
                 const searchBtn = document.getElementById('search-schedules-btn');
                 if (searchBtn) {
-                    searchBtn.addEventListener('click', () => this.searchSchedules());
+                    searchBtn.addEventListener('click', () => {
+                        console.log('🔍 Search button clicked');
+                        this.searchSchedules();
+                    });
+                    console.log('✅ Search button event bound');
+                } else {
+                    console.error('❌ Search button not found: search-schedules-btn');
                 }
 
                 // Carrier filter buttons
@@ -6898,6 +6913,9 @@
                     const input = document.getElementById(id);
                     if (input) {
                         input.addEventListener('change', () => this.searchSchedules());
+                        console.log(`✅ Change event bound for ${id}`);
+                    } else {
+                        console.warn(`⚠️ Element not found: ${id}`);
                     }
                 });
             },
@@ -6963,8 +6981,18 @@
                 const destination = document.getElementById('schedule-destination').value;
                 const timeframe = parseInt(document.getElementById('schedule-timeframe').value);
 
-                console.log('Search parameters:', { origin, destination, timeframe });
-                console.log('Available schedules:', this.scheduleData.length);
+                console.log('🔍 Search parameters:', { origin, destination, timeframe });
+                console.log('📊 Available schedules:', this.scheduleData.length);
+                
+                // Debug first few schedules
+                if (this.scheduleData.length > 0) {
+                    console.log('📋 First schedule example:', {
+                        id: this.scheduleData[0].id,
+                        origin: this.scheduleData[0].origin,
+                        destination: this.scheduleData[0].destination,
+                        departure: this.scheduleData[0].departure
+                    });
+                }
 
                 if (!origin || !destination) {
                     showToast('Please select both origin and destination ports', 'error');
