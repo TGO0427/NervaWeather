@@ -4229,28 +4229,170 @@
             },
 
             async fetchTrackingData(carrier, trackingNumber) {
-                // For now, return mock data
-                // In production, this would call actual carrier APIs
+                // Generate dynamic mock data based on current date and tracking number
+                // Use tracking number as seed for consistent data across refreshes
+                const seed = this.hashCode(trackingNumber);
+                const seededRandom = this.seededRandom(seed);
+                
+                const now = new Date();
+                const departureDate = new Date(now.getTime() - (seededRandom() * 14 + 1) * 24 * 60 * 60 * 1000); // 1-15 days ago
+                const arrivalDate = new Date(now.getTime() + (seededRandom() * 10 + 2) * 24 * 60 * 60 * 1000); // 2-12 days from now
+                
+                // Generate dynamic route based on carrier
+                const routes = {
+                    'maersk': { origin: 'Shanghai, China', destination: 'Durban, South Africa', vessel: 'MAERSK COPENHAGEN' },
+                    'msc': { origin: 'Rotterdam, Netherlands', destination: 'Cape Town, South Africa', vessel: 'MSC AMSTERDAM' },
+                    'cosco': { origin: 'Ningbo, China', destination: 'Port Elizabeth, South Africa', vessel: 'COSCO SHIPPING UNIVERSE' },
+                    'cma-cgm': { origin: 'Le Havre, France', destination: 'Durban, South Africa', vessel: 'CMA CGM BOUGAINVILLE' },
+                    'hapag-lloyd': { origin: 'Hamburg, Germany', destination: 'Cape Town, South Africa', vessel: 'HAPAG LLOYD EXPRESS' },
+                    'default': { origin: 'Shanghai, China', destination: 'Durban, South Africa', vessel: 'OCEAN CARRIER' }
+                };
+                
+                const route = routes[carrier.toLowerCase()] || routes.default;
+                
+                // Calculate progress based on time elapsed
+                const totalJourney = arrivalDate.getTime() - departureDate.getTime();
+                const elapsed = now.getTime() - departureDate.getTime();
+                const progress = Math.min(95, Math.max(5, Math.round((elapsed / totalJourney) * 100)));
+                
+                // Generate dynamic status and location based on progress
+                let status, location;
+                if (progress < 15) {
+                    status = 'Departed';
+                    location = route.origin;
+                } else if (progress < 40) {
+                    status = 'In Transit';
+                    location = 'Indian Ocean';
+                } else if (progress < 60) {
+                    status = 'In Transit';
+                    location = 'Port of Singapore';
+                } else if (progress < 80) {
+                    status = 'In Transit';
+                    location = 'Suez Canal';
+                } else if (progress < 95) {
+                    status = 'Approaching Port';
+                    location = 'South African Waters';
+                } else {
+                    status = 'Arrived';
+                    location = route.destination;
+                }
+                
+                // Generate dynamic events
+                const events = [];
+                const eventDates = [];
+                
+                // Departure event
+                eventDates.push(new Date(departureDate));
+                events.push({
+                    date: departureDate.toISOString().split('T')[0],
+                    location: route.origin,
+                    event: 'Container loaded on vessel',
+                    status: 'completed'
+                });
+                
+                // Transit events based on progress
+                if (progress > 20) {
+                    const transitDate = new Date(departureDate.getTime() + (totalJourney * 0.2));
+                    events.push({
+                        date: transitDate.toISOString().split('T')[0],
+                        location: 'Indian Ocean',
+                        event: 'Vessel departed port',
+                        status: 'completed'
+                    });
+                }
+                
+                if (progress > 45) {
+                    const singaporeDate = new Date(departureDate.getTime() + (totalJourney * 0.45));
+                    events.push({
+                        date: singaporeDate.toISOString().split('T')[0],
+                        location: 'Port of Singapore',
+                        event: 'Transit port call',
+                        status: 'completed'
+                    });
+                }
+                
+                if (progress > 70) {
+                    const suezDate = new Date(departureDate.getTime() + (totalJourney * 0.70));
+                    events.push({
+                        date: suezDate.toISOString().split('T')[0],
+                        location: 'Suez Canal',
+                        event: 'Canal transit',
+                        status: 'completed'
+                    });
+                }
+                
+                // Current location event
+                events.push({
+                    date: now.toISOString().split('T')[0],
+                    location: location,
+                    event: `Container ${status.toLowerCase()}`,
+                    status: 'current'
+                });
+                
+                // Arrival event
+                events.push({
+                    date: arrivalDate.toISOString().split('T')[0],
+                    location: route.destination,
+                    event: 'Estimated arrival',
+                    status: status === 'Arrived' ? 'completed' : 'pending'
+                });
+                
                 const mockData = {
                     trackingNumber: trackingNumber,
                     carrier: carrier.toUpperCase(),
-                    status: 'In Transit',
-                    location: 'Port of Singapore',
-                    vessel: 'MSC AMSTERDAM',
-                    eta: '2025-01-15',
-                    progress: 65,
-                    events: [
-                        { date: '2025-01-01', location: 'Shanghai, China', event: 'Container loaded on vessel', status: 'completed' },
-                        { date: '2025-01-05', location: 'Hong Kong', event: 'Vessel departed', status: 'completed' },
-                        { date: '2025-01-10', location: 'Singapore', event: 'Vessel arrived', status: 'completed' },
-                        { date: '2025-01-12', location: 'Singapore', event: 'Container in transit', status: 'current' },
-                        { date: '2025-01-15', location: 'Durban, South Africa', event: 'Estimated arrival', status: 'pending' }
-                    ]
+                    status: status,
+                    location: location,
+                    vessel: route.vessel,
+                    eta: arrivalDate.toISOString().split('T')[0],
+                    progress: progress,
+                    events: events,
+                    lastUpdate: now.toISOString(),
+                    temperature: Math.round(seededRandom() * 10 + 20), // 20-30°C
+                    humidity: Math.round(seededRandom() * 20 + 60), // 60-80%
+                    coordinates: this.generateCoordinates(progress, route)
                 };
 
                 // Simulate API delay
                 await new Promise(resolve => setTimeout(resolve, 1500));
                 return mockData;
+            },
+            
+            generateCoordinates(progress, route) {
+                // Generate realistic coordinates based on progress
+                const routes = {
+                    'Shanghai, China': { lat: 31.2304, lng: 121.4737 },
+                    'Durban, South Africa': { lat: -29.8587, lng: 31.0218 },
+                    'Rotterdam, Netherlands': { lat: 51.9244, lng: 4.4777 },
+                    'Cape Town, South Africa': { lat: -33.9249, lng: 18.4241 }
+                };
+                
+                const origin = routes[route.origin] || routes['Shanghai, China'];
+                const destination = routes[route.destination] || routes['Durban, South Africa'];
+                
+                // Linear interpolation between origin and destination
+                const lat = origin.lat + (destination.lat - origin.lat) * (progress / 100);
+                const lng = origin.lng + (destination.lng - origin.lng) * (progress / 100);
+                
+                return { lat: lat.toFixed(4), lng: lng.toFixed(4) };
+            },
+            
+            // Helper functions for consistent data generation
+            hashCode(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // Convert to 32bit integer
+                }
+                return Math.abs(hash);
+            },
+            
+            seededRandom(seed) {
+                let value = seed;
+                return function() {
+                    value = (value * 9301 + 49297) % 233280;
+                    return value / 233280;
+                };
             },
 
             displayTrackingResults(data) {
@@ -4269,10 +4411,11 @@
                             <span class="px-3 py-1 text-sm rounded-full ${this.getStatusColor(data.status)}">${data.status}</span>
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                             <div>
                                 <p class="text-xs text-gray-500">Current Location</p>
                                 <p class="font-medium">${data.location}</p>
+                                <p class="text-xs text-blue-600">${data.coordinates?.lat || ''}, ${data.coordinates?.lng || ''}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500">Estimated Arrival</p>
@@ -4286,6 +4429,11 @@
                                     </div>
                                     <span class="text-sm font-medium">${data.progress}%</span>
                                 </div>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Last Updated</p>
+                                <p class="font-medium">${new Date(data.lastUpdate).toLocaleString()}</p>
+                                <p class="text-xs text-green-600">🌡️ ${data.temperature}°C | 💧 ${data.humidity}%</p>
                             </div>
                         </div>
                     </div>
@@ -4352,10 +4500,14 @@
                     status: trackingData.status,
                     location: trackingData.location,
                     route: this.extractRouteInfo(trackingData),
-                    lastUpdate: new Date().toLocaleString(),
+                    lastUpdate: new Date(trackingData.lastUpdate).toLocaleString(),
                     vessel: trackingData.vessel,
                     eta: trackingData.eta,
-                    progress: trackingData.progress
+                    progress: trackingData.progress,
+                    temperature: trackingData.temperature,
+                    humidity: trackingData.humidity,
+                    coordinates: trackingData.coordinates,
+                    events: trackingData.events || []
                 };
 
                 if (existingIndex >= 0) {
