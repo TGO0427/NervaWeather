@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "costing-app.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/costing-app.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/costing-app.html"
+    }
+  ],
+  "functions": {
+    "costing-app.html": {
+      "includeFiles": ["whatsapp-config.js"]
+    }
+  }
+}

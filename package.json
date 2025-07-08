@@ -1,19 +1,27 @@
 {
-  "name": "new-costing-app",
-  "private": true,
-  "version": "0.0.0",
+  "name": "nerva-weather-intelligence",
+  "private": false,
+  "version": "1.0.0",
+  "description": "Advanced Container Tracking & Storm Prediction Platform",
+  "main": "costing-app.html",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "python -m http.server 3000",
+    "build": "echo 'No build step required for static HTML'",
+    "start": "echo 'Static HTML deployment'",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "tailwind:init": "tailwindcss init -p"
   },
   "dependencies": {
+    "@react-three/drei": "^10.4.4",
+    "@react-three/fiber": "^9.2.0",
+    "@types/three": "^0.178.0",
     "express": "^5.1.0",
+    "openai": "^5.8.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "three": "^0.178.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
