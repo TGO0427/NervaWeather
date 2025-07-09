@@ -11,7 +11,10 @@
     "start": "echo 'Static HTML deployment'",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "tailwind:init": "tailwindcss init -p"
+    "tailwind:init": "tailwindcss init -p",
+    "maritime:deploy": "./deploy-maritime.sh",
+    "maritime:test": "open maritime-dashboard.html",
+    "maritime:health": "open health-check.html"
   },
   "dependencies": {
     "@react-three/drei": "^10.4.4",

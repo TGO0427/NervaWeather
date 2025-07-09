@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maritime API Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="env.js"></script>
+    <script src="maritime-config.js"></script>
+    <script src="maritime-provider.js"></script>
+    <style>
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-healthy { background-color: #10b981; }
+        .status-unhealthy { background-color: #ef4444; }
+        .status-unknown { background-color: #6b7280; }
+        .status-configured { background-color: #3b82f6; }
+        .status-not-configured { background-color: #f59e0b; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Maritime API Management Dashboard</h1>
+            <p class="text-gray-600 mt-2">Monitor and manage maritime data provider integrations</p>
+        </div>
+
+        <!-- System Status Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">System Status</dt>
+                            <dd class="text-lg font-medium text-gray-900" id="system-status">Loading...</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Total Requests</dt>
+                            <dd class="text-lg font-medium text-gray-900" id="total-requests">0</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Error Rate</dt>
+                            <dd class="text-lg font-medium text-gray-900" id="error-rate">0%</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Cache Hit Rate</dt>
+                            <dd class="text-lg font-medium text-gray-900" id="cache-hit-rate">0%</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Provider Status -->
+        <div class="bg-white shadow rounded-lg mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Maritime Data Providers</h2>
+            </div>
+            <div class="px-6 py-4">
+                <div id="provider-status" class="space-y-4">
+                    <!-- Provider cards will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- API Configuration -->
+        <div class="bg-white shadow rounded-lg mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">API Configuration</h2>
+            </div>
+            <div class="px-6 py-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">AISHub Username</label>
+                        <input type="text" id="aishub-key" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Enter AISHub username">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Datalastic API Key</label>
+                        <input type="password" id="datalastic-key" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Enter Datalastic API key">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">SeaRates API Key</label>
+                        <input type="password" id="searates-key" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Enter SeaRates API key">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button onclick="updateConfiguration()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Update Configuration</button>
+                    <button onclick="testConnections()" class="ml-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">Test Connections</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Metrics -->
+        <div class="bg-white shadow rounded-lg mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">System Metrics</h2>
+            </div>
+            <div class="px-6 py-4">
+                <div id="metrics-display" class="space-y-4">
+                    <!-- Metrics will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- API Test Console -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">API Test Console</h2>
+            </div>
+            <div class="px-6 py-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Test Type</label>
+                        <select id="test-type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="vessel">Vessel Data</option>
+                            <option value="schedule">Schedule Data</option>
+                            <option value="live-updates">Live Updates</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Test Parameters</label>
+                        <input type="text" id="test-params" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., MMSI: 123456789">
+                    </div>
+                </div>
+                <button onclick="runTest()" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Run Test</button>
+                <div id="test-results" class="mt-4 p-4 bg-gray-50 rounded-md" style="display: none;">
+                    <pre id="test-output" class="text-sm text-gray-800"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let refreshInterval;
+
+        // Initialize dashboard
+        window.addEventListener('load', function() {
+            initializeDashboard();
+            startAutoRefresh();
+        });
+
+        function initializeDashboard() {
+            updateSystemStatus();
+            updateProviderStatus();
+            updateMetrics();
+            loadCurrentConfiguration();
+        }
+
+        function updateSystemStatus() {
+            const status = window.MaritimeDataProvider.getStatus();
+            
+            document.getElementById('system-status').textContent = status.initialized ? 'Operational' : 'Initializing';
+            document.getElementById('total-requests').textContent = status.metrics.requests.toLocaleString();
+            
+            const errorRate = status.metrics.requests > 0 ? (status.metrics.errors / status.metrics.requests * 100).toFixed(1) : 0;
+            document.getElementById('error-rate').textContent = errorRate + '%';
+            
+            const hitRate = status.cache.hitRate ? (status.cache.hitRate * 100).toFixed(1) : 0;
+            document.getElementById('cache-hit-rate').textContent = hitRate + '%';
+        }
+
+        function updateProviderStatus() {
+            const providers = window.MaritimeUtils.getProviderStatus();
+            const container = document.getElementById('provider-status');
+            
+            container.innerHTML = providers.map(provider => `
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="status-indicator status-${provider.configured ? 'configured' : 'not-configured'}"></span>
+                            <div>
+                                <h3 class="text-lg font-medium">${provider.name}</h3>
+                                <p class="text-sm text-gray-600">${provider.type} • Priority ${provider.priority}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-medium ${provider.configured ? 'text-green-600' : 'text-yellow-600'}">
+                                ${provider.configured ? 'Configured' : 'Not Configured'}
+                            </p>
+                            <p class="text-xs text-gray-500">${provider.cost}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-500">Features:</p>
+                            <p class="text-gray-900">${provider.features.join(', ')}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Rate Limit:</p>
+                            <p class="text-gray-900">${provider.rateLimit.requests.toLocaleString()}/${provider.rateLimit.period}</p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <a href="${provider.documentation}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm">View Documentation →</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateMetrics() {
+            const metrics = window.MaritimeDataProvider.getMetrics();
+            const container = document.getElementById('metrics-display');
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Request Metrics</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Total Requests:</span>
+                                <span class="font-medium">${metrics.requests.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Total Errors:</span>
+                                <span class="font-medium text-red-600">${metrics.errors.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Cache Hits:</span>
+                                <span class="font-medium text-green-600">${metrics.cacheHits.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Provider Usage</h4>
+                        <div class="space-y-2 text-sm">
+                            ${Object.entries(metrics.providerUsage).map(([provider, usage]) => `
+                                <div class="flex justify-between">
+                                    <span>${provider}:</span>
+                                    <span class="font-medium">${usage.requests} req (${usage.errors} errors)</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadCurrentConfiguration() {
+            document.getElementById('aishub-key').value = window.ENV?.AISHUB_USERNAME || '';
+            document.getElementById('datalastic-key').value = window.ENV?.DATALASTIC_API_KEY || '';
+            document.getElementById('searates-key').value = window.ENV?.SEARATES_API_KEY || '';
+        }
+
+        function updateConfiguration() {
+            const aishubKey = document.getElementById('aishub-key').value;
+            const datalasticKey = document.getElementById('datalastic-key').value;
+            const searatesKey = document.getElementById('searates-key').value;
+
+            // Update environment variables
+            window.ENV = {
+                ...window.ENV,
+                AISHUB_USERNAME: aishubKey,
+                DATALASTIC_API_KEY: datalasticKey,
+                SEARATES_API_KEY: searatesKey
+            };
+
+            // Show success message
+            showNotification('Configuration updated successfully!', 'success');
+            
+            // Refresh provider status
+            updateProviderStatus();
+        }
+
+        async function testConnections() {
+            const providers = window.MaritimeUtils.getConfiguredProviders();
+            const results = [];
+
+            for (const provider of providers) {
+                try {
+                    const testResult = await window.MaritimeDataProvider.makeRequest(provider, 'vessel', { mmsi: '123456789' });
+                    results.push({
+                        provider,
+                        success: testResult.success,
+                        responseTime: testResult.responseTime,
+                        error: testResult.error
+                    });
+                } catch (error) {
+                    results.push({
+                        provider,
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+
+            // Display results
+            const resultsText = results.map(r => 
+                `${r.provider}: ${r.success ? `✅ Success (${r.responseTime}ms)` : `❌ Failed - ${r.error}`}`
+            ).join('\n');
+
+            document.getElementById('test-results').style.display = 'block';
+            document.getElementById('test-output').textContent = resultsText;
+        }
+
+        async function runTest() {
+            const testType = document.getElementById('test-type').value;
+            const params = document.getElementById('test-params').value;
+
+            document.getElementById('test-results').style.display = 'block';
+            document.getElementById('test-output').textContent = 'Running test...';
+
+            try {
+                let result;
+                switch (testType) {
+                    case 'vessel':
+                        const mmsi = params.replace(/\D/g, '');
+                        result = await window.MaritimeDataProvider.fetchVesselData(mmsi);
+                        break;
+                    case 'schedule':
+                        const [origin, destination] = params.split(',').map(s => s.trim());
+                        result = await window.MaritimeDataProvider.fetchScheduleData(origin, destination);
+                        break;
+                    case 'live-updates':
+                        result = await window.MaritimeDataProvider.getLiveUpdates();
+                        break;
+                }
+
+                document.getElementById('test-output').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('test-output').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                updateSystemStatus();
+                updateMetrics();
+            }, 5000); // Refresh every 5 seconds
+        }
+
+        function showNotification(message, type = 'info') {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' : 
+                type === 'error' ? 'bg-red-500 text-white' : 
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>
