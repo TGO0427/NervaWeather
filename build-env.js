@@ -9,5 +9,5 @@ window.ENV = {
     SEARATES_API_KEY: '${process.env.SEARATES_API_KEY || 'YOUR_SEARATES_API_KEY'}'
 };`;
 
-fs.writeFileSync('env.js', envContent);
+fs.writeFileSync('public/env.js', envContent);
 console.log('Generated env.js with environment variables');
